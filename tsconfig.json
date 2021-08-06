@@ -7,5 +7,5 @@
     "types": ["node", "mocha"],
     "declaration": true
   },
-  "include": ["index.ts"]
+  "include": ["src/**/*.ts"]
 }
