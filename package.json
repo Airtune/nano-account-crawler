@@ -1,0 +1,26 @@
+{
+  "name": "nano-account-crawler",
+  "version": "1.0.0",
+  "description": "Makes block iterators that make multiple RPC calls to Nano nodes if neccessary. Block confirmation height is checked so only confirmed blocks are iterated.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*.*"
+  ],
+  "scripts": {
+    "build": "npx tsc --build tsconfig.json",
+    "test": "mocha --require ts-node/register ./test/*.spec.ts"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.4.13",
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^9.0.3",
+    "node-fetch": "^2.6.1",
+    "ts-node": "^10.1.0",
+    "typescript": "^4.3.5"
+  }
+}

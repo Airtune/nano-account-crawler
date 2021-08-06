@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "ES2020",
+    "outDir": "dist",
+    "types": ["node", "mocha"],
+    "declaration": true
+  },
+  "include": ["index.ts"]
+}
