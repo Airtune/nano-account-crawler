@@ -1,10 +1,9 @@
 {
   "name": "nano-account-crawler",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Makes block iterators that make multiple RPC calls to Nano nodes if neccessary. Block confirmation height is checked so only confirmed blocks are iterated.",
   "files": [
-    "dist/**/*.*",
-    "src/**/*.*"
+    "dist/**/*.*"
   ],
   "scripts": {
     "build": "npx tsc --build tsconfig.json",
