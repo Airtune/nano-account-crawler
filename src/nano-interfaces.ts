@@ -2,6 +2,7 @@ export interface INanoBlock {
   type: string;
   subtype: string;
   account: string;
+  amount: string;
   representative: string;
   previous: string;
   hash: string;
