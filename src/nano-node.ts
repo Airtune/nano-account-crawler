@@ -74,11 +74,7 @@ export class NanoNode {
     return history.length === 0 || history.length === undefined;
   }
 
-  /////////////
-  // private //
-  /////////////
-
-  private async jsonRequest(jsonRequest: any): Promise<any> {
+  async jsonRequest(jsonRequest: any): Promise<any> {
     const request = {
       method: 'POST',
       mode: 'cors',
@@ -93,6 +89,10 @@ export class NanoNode {
   
     return jsonResponse;
   }
+
+  /////////////
+  // private //
+  /////////////
 
   private validateIsAccountHistory(accountHistory: INanoAccountHistory) {
     if (typeof(accountHistory) !== 'object') {

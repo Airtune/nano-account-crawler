@@ -8,7 +8,7 @@ export declare class NanoNode {
     getAccountInfo(account: any): Promise<INanoAccountInfo>;
     hasMoreHistory(history: any, confirmationHeight: BigInt): boolean;
     historyIsEmpty(history: any): boolean;
-    private jsonRequest;
+    jsonRequest(jsonRequest: any): Promise<any>;
     private validateIsAccountHistory;
     private validateIsAccountInfo;
     private validateAccount;

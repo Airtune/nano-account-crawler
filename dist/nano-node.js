@@ -131,9 +131,6 @@ var NanoNode = /** @class */ (function () {
     NanoNode.prototype.historyIsEmpty = function (history) {
         return history.length === 0 || history.length === undefined;
     };
-    /////////////
-    // private //
-    /////////////
     NanoNode.prototype.jsonRequest = function (jsonRequest) {
         return __awaiter(this, void 0, void 0, function () {
             var request, response, jsonResponse;
@@ -159,6 +156,9 @@ var NanoNode = /** @class */ (function () {
             });
         });
     };
+    /////////////
+    // private //
+    /////////////
     NanoNode.prototype.validateIsAccountHistory = function (accountHistory) {
         if (typeof (accountHistory) !== 'object') {
             throw Error("UnexpectedNanoNodeResponse: Unexpected accountHistory. Expected type to be 'object', got: " + typeof (accountHistory));
