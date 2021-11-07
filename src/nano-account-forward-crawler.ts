@@ -16,9 +16,9 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
   private accountHistory: INanoAccountHistory;
   private accountInfo: INanoAccountInfo;
   private confirmationHeight: BigInt;
-  
+  private count: number;
 
-  constructor(nanoNode: NanoNode, account: string, head: string = undefined, offset: string = undefined, accountFilter: string[] = undefined) {
+  constructor(nanoNode: NanoNode, account: string, head: string = undefined, offset: string = undefined, accountFilter: string[] = undefined, count: number = undefined) {
     this.nanoNode = nanoNode;
     this.account = account;
     this.head = head;
@@ -26,10 +26,11 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
     this.accountFilter = accountFilter;
     this.accountHistory = undefined;
     this.accountInfo = undefined;
+    this.count = count;
   }
 
   async initialize() {
-    const historySegmentPromise = this.nanoNode.getForwardHistory(this.account, this.head, this.offset, this.accountFilter);
+    const historySegmentPromise = this.nanoNode.getForwardHistory(this.account, this.head, this.offset, this.accountFilter, this.count);
     const accountInfoPromise    = this.nanoNode.getAccountInfo(this.account);
 
     this.accountHistory = await historySegmentPromise;
@@ -60,6 +61,8 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
     let history: INanoBlock[] = this.accountHistory.history;
     let historyIndex: number = 0;
 
+    const startBlockHeight: (boolean|bigint) = history[historyIndex] && BigInt(history[historyIndex].height);
+
     return {
       next: async () => {
         if (history.length === 0 || historyIndex >= history.length) {
@@ -84,14 +87,23 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
             if (rpcIterations > maxRpcIterations) {
               throw Error(`TooManyRpcIterations: Expected to fetch full history from nano node within ${maxRpcIterations} requests.`);
             }
-            const _accountHistory = await this.nanoNode.getForwardHistory(this.account, block.hash, "1", this.accountFilter);
+            // TODO: Edge case optimization that reduce count on each rpc iteration so last iteration doesn't include bloat blocks for large requests.
+            const _accountHistory = await this.nanoNode.getForwardHistory(this.account, block.hash, "1", this.accountFilter, this.count);
             history = _accountHistory.history;
             historyIndex = 0;
           }
         }
 
-        return { value: block, done: false };
+        if (this.reachedCount(startBlockHeight, blockHeight)) {
+          return { value: block, done: true };
+        } {
+          return { value: block, done: false };
+        }
       }
     };
+  }
+
+  private reachedCount(startBlockHeight: bigint, blockHeight: bigint): boolean {
+    return this.count && (blockHeight - startBlockHeight) >= BigInt(this.count);
   }
 }

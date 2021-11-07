@@ -20,4 +20,26 @@ describe('NanoAccountForwardCrawler using Kalium Banano API', function() {
       expectedPrevious = block.hash;
     }
   });
+
+  it('works with a 1 block count limit on NanoAccountForwardCrawler', async () => {
+    await countTest(1);
+  });
+
+  it('works with a 3 block count limit on NanoAccountForwardCrawler', async () => {
+    await countTest(3);
+  });
 });
+
+async function countTest(expectedCount) {
+  const banCrawler = new NanoAccountForwardCrawler(bananode, account, previous, '1', undefined, expectedCount);
+    await banCrawler.initialize();
+
+    let expectedPrevious = previous;
+    let count = 0;
+    for await (const block of banCrawler) {
+      count = count + 1;
+      expect(block.previous).to.equal(expectedPrevious);
+      expectedPrevious = block.hash;
+    }
+    expect(count).to.equal(expectedCount);
+}

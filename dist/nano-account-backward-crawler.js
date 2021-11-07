@@ -39,15 +39,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NanoAccountBackwardCrawler = void 0;
 // Iterable that makes requests as required when looping through blocks in an account.
 var NanoAccountBackwardCrawler = /** @class */ (function () {
-    function NanoAccountBackwardCrawler(nanoNode, account, head, accountFilter) {
+    function NanoAccountBackwardCrawler(nanoNode, account, head, accountFilter, count) {
         if (head === void 0) { head = undefined; }
         if (accountFilter === void 0) { accountFilter = undefined; }
+        if (count === void 0) { count = undefined; }
         this.nanoNode = nanoNode;
         this.account = account;
         this.head = head;
-        this.accountFilter = null;
         this.accountInfo = null;
         this.accountFilter = accountFilter;
+        this.count = count;
     }
     NanoAccountBackwardCrawler.prototype.initialize = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -55,7 +56,7 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        historySegmentPromise = this.nanoNode.getBackwardHistory(this.account, this.head, "0", this.accountFilter);
+                        historySegmentPromise = this.nanoNode.getBackwardHistory(this.account, this.head, "0", this.accountFilter, this.count);
                         accountInfoPromise = this.nanoNode.getAccountInfo(this.account);
                         _a = this;
                         return [4 /*yield*/, historySegmentPromise];
@@ -80,11 +81,13 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
         var rpcIterations = 0;
         var history = this.accountHistory.history;
         var historyIndex = undefined;
+        var startBlock;
+        var startBlockHeight;
         // set historyIndex to latest confirmed block
         for (var index = 0; index < history.length; index++) {
-            var block = history[index];
-            var blockHeight = BigInt('' + block.height);
-            if (blockHeight > BigInt('0') && blockHeight <= this.confirmationHeight) {
+            startBlock = history[index];
+            startBlockHeight = BigInt('' + startBlock.height);
+            if (startBlockHeight > BigInt('0') && startBlockHeight <= this.confirmationHeight) {
                 historyIndex = index;
                 break;
             }
@@ -113,17 +116,27 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                             if (rpcIterations > maxRpcIterations) {
                                 throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within " + maxRpcIterations + " requests.");
                             }
-                            return [4 /*yield*/, this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter)];
+                            return [4 /*yield*/, this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this.count)];
                         case 2:
                             _accountHistory = _a.sent();
                             history = _accountHistory.history;
                             historyIndex = 0;
                             _a.label = 3;
-                        case 3: return [2 /*return*/, { value: block, done: false }];
+                        case 3:
+                            if (this.reachedCount(startBlockHeight, blockHeight)) {
+                                return [2 /*return*/, { value: block, done: true }];
+                            }
+                            else {
+                                return [2 /*return*/, { value: block, done: false }];
+                            }
+                            return [2 /*return*/];
                     }
                 });
             }); }
         };
+    };
+    NanoAccountBackwardCrawler.prototype.reachedCount = function (startBlockHeight, blockHeight) {
+        return this.count && (startBlockHeight - blockHeight) >= BigInt(this.count);
     };
     return NanoAccountBackwardCrawler;
 }());

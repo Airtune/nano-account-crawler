@@ -12,7 +12,7 @@ export class NanoNode {
     this.fetch = fetch;
   }
 
-  async getForwardHistory(account: string, head: string = undefined, offset: string = "0", account_filter: string[] = undefined): Promise<INanoAccountHistory> {
+  async getForwardHistory(account: string, head: string = undefined, offset: string = "0", account_filter: string[] = undefined, count: number = undefined): Promise<INanoAccountHistory> {
     const request: any = {
       action: 'account_history',
       account: account,
@@ -27,6 +27,9 @@ export class NanoNode {
     if (account_filter) {
       request.account_filter = account_filter;
     }
+    if (count) {
+      request.count = count;
+    }
     const response = await this.jsonRequest(request);
     this.validateIsAccountHistory(response);
     this.validateAccount(account, response);
@@ -34,7 +37,7 @@ export class NanoNode {
     return response;
   }
 
-  async getBackwardHistory(account: string, head: string = undefined, offset: string = "0", account_filter: string[] = undefined): Promise<INanoAccountHistory> {
+  async getBackwardHistory(account: string, head: string = undefined, offset: string = "0", account_filter: string[] = undefined, count: number = undefined): Promise<INanoAccountHistory> {
     const request: any = {
       action: 'account_history',
       account: account,
@@ -46,6 +49,9 @@ export class NanoNode {
     }
     if (account_filter) {
       request.account_filter = account_filter;
+    }
+    if (count) {
+      request.count = count;
     }
     const response: INanoAccountHistory = await this.jsonRequest(request);
     this.validateIsAccountHistory(response);

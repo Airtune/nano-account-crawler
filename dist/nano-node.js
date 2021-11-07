@@ -42,10 +42,11 @@ var NanoNode = /** @class */ (function () {
         this.nodeApiUrl = nodeApiUrl;
         this.fetch = fetch;
     }
-    NanoNode.prototype.getForwardHistory = function (account, head, offset, account_filter) {
+    NanoNode.prototype.getForwardHistory = function (account, head, offset, account_filter, count) {
         if (head === void 0) { head = undefined; }
         if (offset === void 0) { offset = "0"; }
         if (account_filter === void 0) { account_filter = undefined; }
+        if (count === void 0) { count = undefined; }
         return __awaiter(this, void 0, void 0, function () {
             var request, response;
             return __generator(this, function (_a) {
@@ -65,6 +66,9 @@ var NanoNode = /** @class */ (function () {
                         if (account_filter) {
                             request.account_filter = account_filter;
                         }
+                        if (count) {
+                            request.count = count;
+                        }
                         return [4 /*yield*/, this.jsonRequest(request)];
                     case 1:
                         response = _a.sent();
@@ -75,10 +79,11 @@ var NanoNode = /** @class */ (function () {
             });
         });
     };
-    NanoNode.prototype.getBackwardHistory = function (account, head, offset, account_filter) {
+    NanoNode.prototype.getBackwardHistory = function (account, head, offset, account_filter, count) {
         if (head === void 0) { head = undefined; }
         if (offset === void 0) { offset = "0"; }
         if (account_filter === void 0) { account_filter = undefined; }
+        if (count === void 0) { count = undefined; }
         return __awaiter(this, void 0, void 0, function () {
             var request, response;
             return __generator(this, function (_a) {
@@ -95,6 +100,9 @@ var NanoNode = /** @class */ (function () {
                         }
                         if (account_filter) {
                             request.account_filter = account_filter;
+                        }
+                        if (count) {
+                            request.count = count;
                         }
                         return [4 /*yield*/, this.jsonRequest(request)];
                     case 1:

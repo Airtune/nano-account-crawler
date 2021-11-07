@@ -8,7 +8,9 @@ export declare class NanoAccountBackwardCrawler implements INanoAccountBackwardI
     private accountHistory;
     private accountInfo;
     private confirmationHeight;
-    constructor(nanoNode: NanoNode, account: string, head?: string, accountFilter?: string[]);
+    private count;
+    constructor(nanoNode: NanoNode, account: string, head?: string, accountFilter?: string[], count?: number);
     initialize(): Promise<void>;
     [Symbol.asyncIterator](): AsyncIterator<INanoBlock>;
+    private reachedCount;
 }

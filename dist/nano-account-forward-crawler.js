@@ -39,10 +39,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NanoAccountForwardCrawler = void 0;
 // Iterable that makes requests as required when looping through blocks in an account.
 var NanoAccountForwardCrawler = /** @class */ (function () {
-    function NanoAccountForwardCrawler(nanoNode, account, head, offset, accountFilter) {
+    function NanoAccountForwardCrawler(nanoNode, account, head, offset, accountFilter, count) {
         if (head === void 0) { head = undefined; }
         if (offset === void 0) { offset = undefined; }
         if (accountFilter === void 0) { accountFilter = undefined; }
+        if (count === void 0) { count = undefined; }
         this.nanoNode = nanoNode;
         this.account = account;
         this.head = head;
@@ -50,6 +51,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
         this.accountFilter = accountFilter;
         this.accountHistory = undefined;
         this.accountInfo = undefined;
+        this.count = count;
     }
     NanoAccountForwardCrawler.prototype.initialize = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -57,7 +59,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        historySegmentPromise = this.nanoNode.getForwardHistory(this.account, this.head, this.offset, this.accountFilter);
+                        historySegmentPromise = this.nanoNode.getForwardHistory(this.account, this.head, this.offset, this.accountFilter, this.count);
                         accountInfoPromise = this.nanoNode.getAccountInfo(this.account);
                         _a = this;
                         return [4 /*yield*/, historySegmentPromise];
@@ -90,6 +92,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
         var rpcIterations = 0;
         var history = this.accountHistory.history;
         var historyIndex = 0;
+        var startBlockHeight = history[historyIndex] && BigInt(history[historyIndex].height);
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
                 var block, blockHeight, _accountHistory;
@@ -112,17 +115,27 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             if (rpcIterations > maxRpcIterations) {
                                 throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within " + maxRpcIterations + " requests.");
                             }
-                            return [4 /*yield*/, this.nanoNode.getForwardHistory(this.account, block.hash, "1", this.accountFilter)];
+                            return [4 /*yield*/, this.nanoNode.getForwardHistory(this.account, block.hash, "1", this.accountFilter, this.count)];
                         case 1:
                             _accountHistory = _a.sent();
                             history = _accountHistory.history;
                             historyIndex = 0;
                             _a.label = 2;
-                        case 2: return [2 /*return*/, { value: block, done: false }];
+                        case 2:
+                            if (this.reachedCount(startBlockHeight, blockHeight)) {
+                                return [2 /*return*/, { value: block, done: true }];
+                            }
+                            {
+                                return [2 /*return*/, { value: block, done: false }];
+                            }
+                            return [2 /*return*/];
                     }
                 });
             }); }
         };
+    };
+    NanoAccountForwardCrawler.prototype.reachedCount = function (startBlockHeight, blockHeight) {
+        return this.count && (blockHeight - startBlockHeight) >= BigInt(this.count);
     };
     return NanoAccountForwardCrawler;
 }());
