@@ -12,7 +12,6 @@ export declare class NanoAccountForwardCrawler implements INanoAccountForwardIte
     private count;
     constructor(nanoNode: NanoNode, account: string, head?: string, offset?: string, accountFilter?: string[], count?: number);
     initialize(): Promise<void>;
-    firstBlock(): INanoBlock;
     [Symbol.asyncIterator](): AsyncIterator<INanoBlock>;
     private reachedCount;
 }

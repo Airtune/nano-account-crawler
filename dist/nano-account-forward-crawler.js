@@ -75,14 +75,6 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
             });
         });
     };
-    NanoAccountForwardCrawler.prototype.firstBlock = function () {
-        var block = this.accountHistory.history[0];
-        var blockHeight = BigInt('' + block.height);
-        if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
-            throw Error("NotConfirmed: first block in account history not confirmed for account: " + this.account);
-        }
-        return block;
-    };
     NanoAccountForwardCrawler.prototype[Symbol.asyncIterator] = function () {
         var _this = this;
         if (this.accountHistory === undefined || this.accountInfo === undefined || this.confirmationHeight <= BigInt('0')) {
@@ -92,6 +84,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
         var rpcIterations = 0;
         var history = this.accountHistory.history;
         var historyIndex = 0;
+        var previous = undefined;
         var startBlockHeight = history[historyIndex] && BigInt(history[historyIndex].height);
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
@@ -106,6 +99,12 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             blockHeight = BigInt('' + block.height);
                             if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
                                 return [2 /*return*/, { value: undefined, done: true }];
+                            }
+                            if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
+                                return [2 /*return*/, { value: undefined, done: true }];
+                            }
+                            if (typeof previous === "string" && block.previous !== previous) {
+                                throw Error("InvalidChain: Expected previous: " + previous + " got " + block.previous + " for " + block.hash);
                             }
                             historyIndex += 1;
                             if (!(historyIndex >= history.length)) return [3 /*break*/, 2];
@@ -122,6 +121,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             historyIndex = 0;
                             _a.label = 2;
                         case 2:
+                            previous = block.hash;
                             if (this.reachedCount(startBlockHeight, blockHeight)) {
                                 return [2 /*return*/, { value: block, done: true }];
                             }

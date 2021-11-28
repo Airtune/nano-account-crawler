@@ -39,17 +39,6 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
     this.confirmationHeight = BigInt('' + this.accountInfo.confirmation_height);
   }
 
-  firstBlock(): INanoBlock {
-    const block: INanoBlock = this.accountHistory.history[0];
-    const blockHeight = BigInt('' + block.height);
-
-    if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
-      throw Error(`NotConfirmed: first block in account history not confirmed for account: ${this.account}`);
-    }
-
-    return block;
-  }
-
   [Symbol.asyncIterator](): AsyncIterator<INanoBlock> {
     if (this.accountHistory === undefined || this.accountInfo === undefined || this.confirmationHeight <= BigInt('0')) {
       throw Error('NanoAccountCrawlerError: not initialized. Did you call initialize() before iterating?');
@@ -60,6 +49,7 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
 
     let history: INanoBlock[] = this.accountHistory.history;
     let historyIndex: number = 0;
+    let previous: string = undefined;
 
     const startBlockHeight: (boolean|bigint) = history[historyIndex] && BigInt(history[historyIndex].height);
 
@@ -74,6 +64,14 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
 
         if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
           return { value: undefined, done: true };
+        }
+
+        if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
+          return { value: undefined, done: true };
+        }
+
+        if (typeof previous === "string" && block.previous !== previous) {
+          throw Error(`InvalidChain: Expected previous: ${previous} got ${block.previous} for ${block.hash}`);
         }
 
         historyIndex += 1;
@@ -93,6 +91,8 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
             historyIndex = 0;
           }
         }
+
+        previous = block.hash;
 
         if (this.reachedCount(startBlockHeight, blockHeight)) {
           return { value: block, done: true };

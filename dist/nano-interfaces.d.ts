@@ -19,7 +19,6 @@ export interface INanoAccountInfo {
     confirmation_height: string;
 }
 export interface INanoAccountForwardIterable extends AsyncIterable<INanoBlock> {
-    firstBlock: () => INanoBlock;
 }
 export interface INanoAccountBackwardIterable extends AsyncIterable<INanoBlock> {
 }

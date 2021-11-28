@@ -83,6 +83,7 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
         var historyIndex = undefined;
         var startBlock;
         var startBlockHeight;
+        var nextHash = undefined;
         // set historyIndex to latest confirmed block
         for (var index = 0; index < history.length; index++) {
             startBlock = history[index];
@@ -106,6 +107,9 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                             if (blockHeight <= BigInt('0')) {
                                 return [2 /*return*/, { value: undefined, done: true }];
                             }
+                            if (typeof nextHash === "string" && block.hash !== nextHash) {
+                                throw Error("InvalidChain: Expected nextHash: " + nextHash + ", got: " + block.hash);
+                            }
                             historyIndex += 1;
                             if (!(historyIndex >= history.length)) return [3 /*break*/, 3];
                             if (!(block.previous === '0000000000000000000000000000000000000000000000000000000000000000')) return [3 /*break*/, 1];
@@ -123,6 +127,7 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                             historyIndex = 0;
                             _a.label = 3;
                         case 3:
+                            nextHash = block.previous;
                             if (this.reachedCount(startBlockHeight, blockHeight)) {
                                 return [2 /*return*/, { value: block, done: true }];
                             }

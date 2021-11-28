@@ -50,6 +50,7 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
 
     let startBlock: INanoBlock;
     let startBlockHeight: bigint;
+    let nextHash: string = undefined;
 
     // set historyIndex to latest confirmed block
     for (let index = 0; index < history.length; index++) {
@@ -74,6 +75,10 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
           return { value: undefined, done: true };
         }
 
+        if (typeof nextHash === "string" && block.hash !== nextHash) {
+          throw Error(`InvalidChain: Expected nextHash: ${nextHash}, got: ${block.hash}`);
+        }
+
         historyIndex += 1;
         if (historyIndex >= history.length) {
           if (block.previous === '0000000000000000000000000000000000000000000000000000000000000000') {
@@ -91,7 +96,9 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
             historyIndex = 0;
           }
         }
-        
+
+        nextHash = block.previous;
+
         if (this.reachedCount(startBlockHeight, blockHeight)) {
           return { value: block, done: true };
         } else {
