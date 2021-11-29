@@ -3,6 +3,8 @@ import {
   INanoAccountInfo
 } from './nano-interfaces';
 
+
+
 export class NanoNode {
   private nodeApiUrl: string;
   private fetch: Function;
@@ -12,7 +14,7 @@ export class NanoNode {
     this.fetch = fetch;
   }
 
-  async getForwardHistory(account: string, head: string = undefined, offset: string = "0", account_filter: string[] = undefined, count: number = undefined): Promise<INanoAccountHistory> {
+  async getForwardHistory(account: string, head: string = undefined, offset: string = "0", account_filter: string[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
     const request: any = {
       action: 'account_history',
       account: account,
@@ -30,14 +32,29 @@ export class NanoNode {
     if (count) {
       request.count = count;
     }
-    const response = await this.jsonRequest(request);
-    this.validateIsAccountHistory(response);
-    this.validateAccount(account, response);
+
+    let retries: number = 0;
+    let response: INanoAccountHistory = undefined;
+
+    while (true) {
+      retries += 1;
+
+      try {
+        response = await this.jsonRequest(request);
+        this.validateIsAccountHistory(response);
+        this.validateAccount(account, response);
+        break;
+      } catch (error) {
+        if (retries >= max_retries || !error.message.match(/^NanoNodeError:/)) {
+          throw error;
+        }
+      }
+    } 
 
     return response;
   }
 
-  async getBackwardHistory(account: string, head: string = undefined, offset: string = "0", account_filter: string[] = undefined, count: number = undefined): Promise<INanoAccountHistory> {
+  async getBackwardHistory(account: string, head: string = undefined, offset: string = "0", account_filter: string[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
     const request: any = {
       action: 'account_history',
       account: account,
@@ -53,10 +70,25 @@ export class NanoNode {
     if (count) {
       request.count = count;
     }
-    const response: INanoAccountHistory = await this.jsonRequest(request);
-    this.validateIsAccountHistory(response);
-    this.validateAccount(account, response);
 
+    let retries: number = 0;
+    let response: INanoAccountHistory = undefined;
+
+    while (true) {
+      retries += 1;
+
+      try {
+        response = await this.jsonRequest(request);
+        this.validateIsAccountHistory(response);
+        this.validateAccount(account, response);
+        break;
+      } catch (error) {
+        if (retries >= max_retries || !error.message.match(/^NanoNodeError:/)) {
+          throw error;
+        }
+      }
+    } 
+    
     return response;
   }
 

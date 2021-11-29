@@ -44,14 +44,14 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
         if (offset === void 0) { offset = undefined; }
         if (accountFilter === void 0) { accountFilter = undefined; }
         if (count === void 0) { count = undefined; }
-        this.nanoNode = nanoNode;
-        this.account = account;
-        this.head = head;
-        this.offset = offset;
-        this.accountFilter = accountFilter;
-        this.accountHistory = undefined;
-        this.accountInfo = undefined;
-        this.count = count;
+        this._nanoNode = nanoNode;
+        this._account = account;
+        this._head = head;
+        this._offset = offset;
+        this._accountFilter = accountFilter;
+        this._accountHistory = undefined;
+        this._accountInfo = undefined;
+        this._count = count;
     }
     NanoAccountForwardCrawler.prototype.initialize = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -59,17 +59,17 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        historySegmentPromise = this.nanoNode.getForwardHistory(this.account, this.head, this.offset, this.accountFilter, this.count);
-                        accountInfoPromise = this.nanoNode.getAccountInfo(this.account);
+                        historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._count);
+                        accountInfoPromise = this._nanoNode.getAccountInfo(this._account);
                         _a = this;
                         return [4 /*yield*/, historySegmentPromise];
                     case 1:
-                        _a.accountHistory = _c.sent();
+                        _a._accountHistory = _c.sent();
                         _b = this;
                         return [4 /*yield*/, accountInfoPromise];
                     case 2:
-                        _b.accountInfo = _c.sent();
-                        this.confirmationHeight = BigInt('' + this.accountInfo.confirmation_height);
+                        _b._accountInfo = _c.sent();
+                        this._confirmationHeight = BigInt('' + this._accountInfo.confirmation_height);
                         return [2 /*return*/];
                 }
             });
@@ -77,12 +77,12 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
     };
     NanoAccountForwardCrawler.prototype[Symbol.asyncIterator] = function () {
         var _this = this;
-        if (this.accountHistory === undefined || this.accountInfo === undefined || this.confirmationHeight <= BigInt('0')) {
+        if (this._accountHistory === undefined || this._accountInfo === undefined || this._confirmationHeight <= BigInt('0')) {
             throw Error('NanoAccountCrawlerError: not initialized. Did you call initialize() before iterating?');
         }
         var maxRpcIterations = 1000;
         var rpcIterations = 0;
-        var history = this.accountHistory.history;
+        var history = this._accountHistory.history;
         var historyIndex = 0;
         var previous = undefined;
         var startBlockHeight = history[historyIndex] && BigInt(history[historyIndex].height);
@@ -97,10 +97,10 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             }
                             block = history[historyIndex];
                             blockHeight = BigInt('' + block.height);
-                            if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
+                            if (blockHeight <= BigInt('0') || blockHeight > this._confirmationHeight) {
                                 return [2 /*return*/, { value: undefined, done: true }];
                             }
-                            if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
+                            if (blockHeight <= BigInt('0') || blockHeight > this._confirmationHeight) {
                                 return [2 /*return*/, { value: undefined, done: true }];
                             }
                             if (typeof previous === "string" && block.previous !== previous) {
@@ -108,13 +108,13 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             }
                             historyIndex += 1;
                             if (!(historyIndex >= history.length)) return [3 /*break*/, 2];
-                            if (!this.nanoNode.hasMoreHistory(history, this.confirmationHeight)) return [3 /*break*/, 2];
+                            if (!this._nanoNode.hasMoreHistory(history, this._confirmationHeight)) return [3 /*break*/, 2];
                             // Guard against infinite loops and making too many RPC calls.
                             rpcIterations += 1;
                             if (rpcIterations > maxRpcIterations) {
                                 throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within " + maxRpcIterations + " requests.");
                             }
-                            return [4 /*yield*/, this.nanoNode.getForwardHistory(this.account, block.hash, "1", this.accountFilter, this.count)];
+                            return [4 /*yield*/, this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._count)];
                         case 1:
                             _accountHistory = _a.sent();
                             history = _accountHistory.history;
@@ -135,8 +135,15 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
         };
     };
     NanoAccountForwardCrawler.prototype.reachedCount = function (startBlockHeight, blockHeight) {
-        return this.count && (blockHeight - startBlockHeight) >= BigInt(this.count);
+        return this._count && (blockHeight - startBlockHeight) >= BigInt(this._count);
     };
+    Object.defineProperty(NanoAccountForwardCrawler.prototype, "account", {
+        get: function () {
+            return this._account;
+        },
+        enumerable: false,
+        configurable: true
+    });
     return NanoAccountForwardCrawler;
 }());
 exports.NanoAccountForwardCrawler = NanoAccountForwardCrawler;

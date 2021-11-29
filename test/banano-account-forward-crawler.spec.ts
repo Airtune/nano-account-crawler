@@ -1,3 +1,4 @@
+import * as bananojs from '@bananocoin/bananojs';
 import { expect } from 'chai';
 import * as fetch from 'node-fetch';
 import { NanoNode } from '../src/nano-node';
@@ -11,7 +12,7 @@ describe('NanoAccountForwardCrawler using Kalium Banano API', function() {
   this.timeout(20000);
 
   it('has a valid chain using for await iterator on NanoAccountForwardCrawler', async () => {
-    const banCrawler = new NanoAccountForwardCrawler(bananode, account, previous, '1');
+    const banCrawler = new NanoAccountForwardCrawler(bananode, account, previous, '1', undefined, 100);
     await banCrawler.initialize();
 
     let expectedPrevious = previous;

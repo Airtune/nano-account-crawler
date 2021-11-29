@@ -63,7 +63,7 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
     }
 
     return {
-      next: async () => {
+      next: async (): Promise<IteratorResult<INanoBlock>> => {
         if (historyIndex === undefined || history.length === 0 || historyIndex >= history.length) {
           return { value: undefined, done: true };
         }

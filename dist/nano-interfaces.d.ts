@@ -3,11 +3,14 @@ export interface INanoBlock {
     subtype: string;
     account: string;
     amount: string;
+    balance: string;
     representative: string;
     previous: string;
     hash: string;
     link: string;
     height: string;
+    work: string;
+    signature: string;
 }
 export interface INanoAccountHistory {
     error: string;

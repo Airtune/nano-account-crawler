@@ -8,53 +8,53 @@ import {
 
 // Iterable that makes requests as required when looping through blocks in an account.
 export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
-  private nanoNode: NanoNode;
-  private account: string;
-  private head: string;
-  private offset: string;
-  private accountFilter: string[];
-  private accountHistory: INanoAccountHistory;
-  private accountInfo: INanoAccountInfo;
-  private confirmationHeight: BigInt;
-  private count: number;
+  private _nanoNode: NanoNode;
+  private _account: string;
+  private _head: string;
+  private _offset: string;
+  private _accountFilter: string[];
+  private _accountHistory: INanoAccountHistory;
+  private _accountInfo: INanoAccountInfo;
+  private _confirmationHeight: BigInt;
+  private _count: number;
 
   constructor(nanoNode: NanoNode, account: string, head: string = undefined, offset: string = undefined, accountFilter: string[] = undefined, count: number = undefined) {
-    this.nanoNode = nanoNode;
-    this.account = account;
-    this.head = head;
-    this.offset = offset;
-    this.accountFilter = accountFilter;
-    this.accountHistory = undefined;
-    this.accountInfo = undefined;
-    this.count = count;
+    this._nanoNode = nanoNode;
+    this._account = account;
+    this._head = head;
+    this._offset = offset;
+    this._accountFilter = accountFilter;
+    this._accountHistory = undefined;
+    this._accountInfo = undefined;
+    this._count = count;
   }
 
   async initialize() {
-    const historySegmentPromise = this.nanoNode.getForwardHistory(this.account, this.head, this.offset, this.accountFilter, this.count);
-    const accountInfoPromise    = this.nanoNode.getAccountInfo(this.account);
+    const historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._count);
+    const accountInfoPromise    = this._nanoNode.getAccountInfo(this._account);
 
-    this.accountHistory = await historySegmentPromise;
-    this.accountInfo    = await accountInfoPromise;
+    this._accountHistory = await historySegmentPromise;
+    this._accountInfo    = await accountInfoPromise;
 
-    this.confirmationHeight = BigInt('' + this.accountInfo.confirmation_height);
+    this._confirmationHeight = BigInt('' + this._accountInfo.confirmation_height);
   }
 
   [Symbol.asyncIterator](): AsyncIterator<INanoBlock> {
-    if (this.accountHistory === undefined || this.accountInfo === undefined || this.confirmationHeight <= BigInt('0')) {
+    if (this._accountHistory === undefined || this._accountInfo === undefined || this._confirmationHeight <= BigInt('0')) {
       throw Error('NanoAccountCrawlerError: not initialized. Did you call initialize() before iterating?');
     }
 
     const maxRpcIterations = 1000;
     let rpcIterations = 0;
 
-    let history: INanoBlock[] = this.accountHistory.history;
+    let history: INanoBlock[] = this._accountHistory.history;
     let historyIndex: number = 0;
     let previous: string = undefined;
 
     const startBlockHeight: (boolean|bigint) = history[historyIndex] && BigInt(history[historyIndex].height);
 
     return {
-      next: async () => {
+      next: async (): Promise<IteratorResult<INanoBlock>> => {
         if (history.length === 0 || historyIndex >= history.length) {
           return { value: undefined, done: true };
         }
@@ -62,11 +62,11 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
         const block: INanoBlock = history[historyIndex];
         const blockHeight = BigInt('' + block.height);
 
-        if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
+        if (blockHeight <= BigInt('0') || blockHeight > this._confirmationHeight) {
           return { value: undefined, done: true };
         }
 
-        if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
+        if (blockHeight <= BigInt('0') || blockHeight > this._confirmationHeight) {
           return { value: undefined, done: true };
         }
 
@@ -79,14 +79,14 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
           // If it's the last block in the history returned by the nano node but it isn't the latest
           // confirmed block it's probably because the node didn't return the full history.
           // In this case fetch the next segment of the history following the last block.
-          if (this.nanoNode.hasMoreHistory(history, this.confirmationHeight)) {
+          if (this._nanoNode.hasMoreHistory(history, this._confirmationHeight)) {
             // Guard against infinite loops and making too many RPC calls.
             rpcIterations += 1;
             if (rpcIterations > maxRpcIterations) {
               throw Error(`TooManyRpcIterations: Expected to fetch full history from nano node within ${maxRpcIterations} requests.`);
             }
             // TODO: Edge case optimization that reduce count on each rpc iteration so last iteration doesn't include bloat blocks for large requests.
-            const _accountHistory = await this.nanoNode.getForwardHistory(this.account, block.hash, "1", this.accountFilter, this.count);
+            const _accountHistory = await this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._count);
             history = _accountHistory.history;
             historyIndex = 0;
           }
@@ -104,6 +104,10 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
   }
 
   private reachedCount(startBlockHeight: bigint, blockHeight: bigint): boolean {
-    return this.count && (blockHeight - startBlockHeight) >= BigInt(this.count);
+    return this._count && (blockHeight - startBlockHeight) >= BigInt(this._count);
+  }
+
+  public get account(): string {
+    return this._account;
   }
 }

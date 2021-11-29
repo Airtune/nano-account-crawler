@@ -42,13 +42,14 @@ var NanoNode = /** @class */ (function () {
         this.nodeApiUrl = nodeApiUrl;
         this.fetch = fetch;
     }
-    NanoNode.prototype.getForwardHistory = function (account, head, offset, account_filter, count) {
+    NanoNode.prototype.getForwardHistory = function (account, head, offset, account_filter, count, max_retries) {
         if (head === void 0) { head = undefined; }
         if (offset === void 0) { offset = "0"; }
         if (account_filter === void 0) { account_filter = undefined; }
         if (count === void 0) { count = undefined; }
+        if (max_retries === void 0) { max_retries = 3; }
         return __awaiter(this, void 0, void 0, function () {
-            var request, response;
+            var request, retries, response, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -69,23 +70,41 @@ var NanoNode = /** @class */ (function () {
                         if (count) {
                             request.count = count;
                         }
-                        return [4 /*yield*/, this.jsonRequest(request)];
+                        retries = 0;
+                        response = undefined;
+                        _a.label = 1;
                     case 1:
+                        if (!true) return [3 /*break*/, 6];
+                        retries += 1;
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        return [4 /*yield*/, this.jsonRequest(request)];
+                    case 3:
                         response = _a.sent();
                         this.validateIsAccountHistory(response);
                         this.validateAccount(account, response);
-                        return [2 /*return*/, response];
+                        return [3 /*break*/, 6];
+                    case 4:
+                        error_1 = _a.sent();
+                        if (retries >= max_retries || !error_1.message.match(/^NanoNodeError:/)) {
+                            throw error_1;
+                        }
+                        return [3 /*break*/, 5];
+                    case 5: return [3 /*break*/, 1];
+                    case 6: return [2 /*return*/, response];
                 }
             });
         });
     };
-    NanoNode.prototype.getBackwardHistory = function (account, head, offset, account_filter, count) {
+    NanoNode.prototype.getBackwardHistory = function (account, head, offset, account_filter, count, max_retries) {
         if (head === void 0) { head = undefined; }
         if (offset === void 0) { offset = "0"; }
         if (account_filter === void 0) { account_filter = undefined; }
         if (count === void 0) { count = undefined; }
+        if (max_retries === void 0) { max_retries = 3; }
         return __awaiter(this, void 0, void 0, function () {
-            var request, response;
+            var request, retries, response, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -104,12 +123,29 @@ var NanoNode = /** @class */ (function () {
                         if (count) {
                             request.count = count;
                         }
-                        return [4 /*yield*/, this.jsonRequest(request)];
+                        retries = 0;
+                        response = undefined;
+                        _a.label = 1;
                     case 1:
+                        if (!true) return [3 /*break*/, 6];
+                        retries += 1;
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        return [4 /*yield*/, this.jsonRequest(request)];
+                    case 3:
                         response = _a.sent();
                         this.validateIsAccountHistory(response);
                         this.validateAccount(account, response);
-                        return [2 /*return*/, response];
+                        return [3 /*break*/, 6];
+                    case 4:
+                        error_2 = _a.sent();
+                        if (retries >= max_retries || !error_2.message.match(/^NanoNodeError:/)) {
+                            throw error_2;
+                        }
+                        return [3 /*break*/, 5];
+                    case 5: return [3 /*break*/, 1];
+                    case 6: return [2 /*return*/, response];
                 }
             });
         });
