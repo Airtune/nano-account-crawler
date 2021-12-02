@@ -52,6 +52,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
         this._accountHistory = undefined;
         this._accountInfo = undefined;
         this._count = count;
+        this._maxRpcIterations = 1000;
     }
     NanoAccountForwardCrawler.prototype.initialize = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -80,7 +81,6 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
         if (this._accountHistory === undefined || this._accountInfo === undefined || this._confirmationHeight <= BigInt('0')) {
             throw Error('NanoAccountCrawlerError: not initialized. Did you call initialize() before iterating?');
         }
-        var maxRpcIterations = 1000;
         var rpcIterations = 0;
         var history = this._accountHistory.history;
         var historyIndex = 0;
@@ -111,8 +111,8 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             if (!this._nanoNode.hasMoreHistory(history, this._confirmationHeight)) return [3 /*break*/, 2];
                             // Guard against infinite loops and making too many RPC calls.
                             rpcIterations += 1;
-                            if (rpcIterations > maxRpcIterations) {
-                                throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within " + maxRpcIterations + " requests.");
+                            if (rpcIterations > this._maxRpcIterations) {
+                                throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within " + this._maxRpcIterations + " requests.");
                             }
                             return [4 /*yield*/, this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._count)];
                         case 1:
@@ -140,6 +140,16 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
     Object.defineProperty(NanoAccountForwardCrawler.prototype, "account", {
         get: function () {
             return this._account;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(NanoAccountForwardCrawler.prototype, "maxRpcIterations", {
+        get: function () {
+            return this._maxRpcIterations;
+        },
+        set: function (value) {
+            this._maxRpcIterations = value;
         },
         enumerable: false,
         configurable: true

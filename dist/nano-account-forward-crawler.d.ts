@@ -10,9 +10,12 @@ export declare class NanoAccountForwardCrawler implements INanoAccountForwardIte
     private _accountInfo;
     private _confirmationHeight;
     private _count;
+    private _maxRpcIterations;
     constructor(nanoNode: NanoNode, account: string, head?: string, offset?: string, accountFilter?: string[], count?: number);
     initialize(): Promise<void>;
     [Symbol.asyncIterator](): AsyncIterator<INanoBlock>;
     private reachedCount;
     get account(): string;
+    get maxRpcIterations(): number;
+    set maxRpcIterations(value: number);
 }

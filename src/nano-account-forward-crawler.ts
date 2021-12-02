@@ -17,6 +17,7 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
   private _accountInfo: INanoAccountInfo;
   private _confirmationHeight: BigInt;
   private _count: number;
+  private _maxRpcIterations: number;
 
   constructor(nanoNode: NanoNode, account: string, head: string = undefined, offset: string = undefined, accountFilter: string[] = undefined, count: number = undefined) {
     this._nanoNode = nanoNode;
@@ -27,6 +28,7 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
     this._accountHistory = undefined;
     this._accountInfo = undefined;
     this._count = count;
+    this._maxRpcIterations = 1000;
   }
 
   async initialize() {
@@ -44,7 +46,7 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
       throw Error('NanoAccountCrawlerError: not initialized. Did you call initialize() before iterating?');
     }
 
-    const maxRpcIterations = 1000;
+    
     let rpcIterations = 0;
 
     let history: INanoBlock[] = this._accountHistory.history;
@@ -82,8 +84,8 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
           if (this._nanoNode.hasMoreHistory(history, this._confirmationHeight)) {
             // Guard against infinite loops and making too many RPC calls.
             rpcIterations += 1;
-            if (rpcIterations > maxRpcIterations) {
-              throw Error(`TooManyRpcIterations: Expected to fetch full history from nano node within ${maxRpcIterations} requests.`);
+            if (rpcIterations > this._maxRpcIterations) {
+              throw Error(`TooManyRpcIterations: Expected to fetch full history from nano node within ${this._maxRpcIterations} requests.`);
             }
             // TODO: Edge case optimization that reduce count on each rpc iteration so last iteration doesn't include bloat blocks for large requests.
             const _accountHistory = await this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._count);
@@ -109,5 +111,13 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
 
   public get account(): string {
     return this._account;
+  }
+
+  public get maxRpcIterations(): number {
+    return this._maxRpcIterations;
+  }
+
+  public set maxRpcIterations(value: number) {
+    this._maxRpcIterations = value;
   }
 }

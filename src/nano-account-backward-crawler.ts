@@ -17,6 +17,7 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
   private accountInfo: INanoAccountInfo;
   private confirmationHeight: BigInt;
   private count: number;
+  private _maxRpcIterations: number;
 
   constructor(nanoNode: NanoNode, account: string, head: string = undefined, accountFilter: string[] = undefined, count: number = undefined) {
     this.nanoNode = nanoNode;
@@ -25,6 +26,7 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
     this.accountInfo = null;
     this.accountFilter = accountFilter;
     this.count = count;
+    this._maxRpcIterations = 1000;
   }
 
   async initialize() {
@@ -110,5 +112,13 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
 
   private reachedCount(startBlockHeight: bigint, blockHeight: bigint): boolean {
     return this.count && (startBlockHeight - blockHeight) >= BigInt(this.count);
+  }
+
+  public get maxRpcIterations(): number {
+    return this._maxRpcIterations;
+  }
+
+  public set maxRpcIterations(value: number) {
+    this._maxRpcIterations = value;
   }
 }

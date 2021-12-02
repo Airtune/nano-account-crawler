@@ -49,6 +49,7 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
         this.accountInfo = null;
         this.accountFilter = accountFilter;
         this.count = count;
+        this._maxRpcIterations = 1000;
     }
     NanoAccountBackwardCrawler.prototype.initialize = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -143,6 +144,16 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
     NanoAccountBackwardCrawler.prototype.reachedCount = function (startBlockHeight, blockHeight) {
         return this.count && (startBlockHeight - blockHeight) >= BigInt(this.count);
     };
+    Object.defineProperty(NanoAccountBackwardCrawler.prototype, "maxRpcIterations", {
+        get: function () {
+            return this._maxRpcIterations;
+        },
+        set: function (value) {
+            this._maxRpcIterations = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
     return NanoAccountBackwardCrawler;
 }());
 exports.NanoAccountBackwardCrawler = NanoAccountBackwardCrawler;
