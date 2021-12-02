@@ -45,7 +45,6 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
     if (this._accountHistory === undefined || this._accountInfo === undefined || this._confirmationHeight <= BigInt('0')) {
       throw Error('NanoAccountCrawlerError: not initialized. Did you call initialize() before iterating?');
     }
-
     
     let rpcIterations = 0;
 
