@@ -1,6 +1,8 @@
+export declare type TNanoBlockType = "state";
+export declare type TNanoBlockSubtype = "send" | "receive" | "open" | "change" | "epoch";
 export interface INanoBlock {
-    type: string;
-    subtype: string;
+    type: TNanoBlockType;
+    subtype: TNanoBlockSubtype;
     account: string;
     amount: string;
     balance: string;
