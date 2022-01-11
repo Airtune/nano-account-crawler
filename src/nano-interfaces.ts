@@ -22,6 +22,7 @@ export interface INanoAccountHistory {
 }
 
 export interface INanoAccountInfo {
+  error: string;
   frontier: string,
   open_block: string,
   representative_block: string,
