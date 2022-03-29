@@ -1,7 +1,8 @@
 {
   "name": "nano-account-crawler",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Makes block iterators that make multiple RPC calls to Nano nodes if neccessary. Block confirmation height is checked so only confirmed blocks are iterated.",
+  "repository": "https://github.com/Airtune/nano-account-crawler",
   "files": [
     "dist/**/*.*"
   ],
@@ -12,15 +13,15 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@bananocoin/bananojs": "^2.4.24",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^16.4.13",
-    "chai": "^4.3.4",
-    "mocha": "^9.1.3",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.3.5"
+    "@bananocoin/bananojs": "^2.5.7",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^16.11.26",
+    "chai": "^4.3.6",
+    "mocha": "^9.2.2",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
   },
   "dependencies": {
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.7"
   }
 }
