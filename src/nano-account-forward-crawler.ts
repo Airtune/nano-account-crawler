@@ -51,12 +51,13 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
     let history: INanoBlock[] = this._accountHistory.history;
     let historyIndex: number = 0;
     let previous: string = undefined;
+    let endReached = false;
 
     const startBlockHeight: (boolean|bigint) = history[historyIndex] && BigInt(history[historyIndex].height);
 
     return {
       next: async (): Promise<IteratorResult<INanoBlock>> => {
-        if (history.length === 0 || historyIndex >= history.length) {
+        if (endReached || history.length === 0 || historyIndex >= history.length) {
           return { value: undefined, done: true };
         }
 
@@ -95,8 +96,9 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
 
         previous = block.hash;
 
-        if (this.reachedCount(startBlockHeight, blockHeight)) {
-          return { value: block, done: true };
+        if (this.reachedCount(startBlockHeight, blockHeight + BigInt(1))) {
+          endReached = true;
+          return { value: block, done: false };
         } {
           return { value: block, done: false };
         }

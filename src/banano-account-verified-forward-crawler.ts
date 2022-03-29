@@ -32,6 +32,10 @@ export class BananoAccountVerifiedForwardCrawler implements INanoAccountForwardI
       next: async () => {
         const iteratorResult: IteratorResult<INanoBlock> = await nanoAccountForwardIterator.next();
         const block: INanoBlock = iteratorResult.value;
+
+        if (iteratorResult.done) {
+          return { value: undefined, done: true };
+        }
   
         // Verify block has expected value for previous
         if (typeof expectedPrevious === "string" && block.previous !== expectedPrevious) {

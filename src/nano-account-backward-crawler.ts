@@ -64,9 +64,11 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
       }
     }
 
+    let endReached = false;
+
     return {
       next: async (): Promise<IteratorResult<INanoBlock>> => {
-        if (historyIndex === undefined || history.length === 0 || historyIndex >= history.length) {
+        if (endReached || historyIndex === undefined || history.length === 0 || historyIndex >= history.length) {
           return { value: undefined, done: true };
         }
 
@@ -84,7 +86,8 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
         historyIndex += 1;
         if (historyIndex >= history.length) {
           if (block.previous === '0000000000000000000000000000000000000000000000000000000000000000') {
-            return { value: undefined, done: true };
+            endReached = true;
+            return { value: block, done: false };
           } else {
             // Guard against infinite loops and making too many RPC calls.
             rpcIterations += 1;
@@ -101,8 +104,9 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
 
         nextHash = block.previous;
 
-        if (this.reachedCount(startBlockHeight, blockHeight)) {
-          return { value: block, done: true };
+        if (this.reachedCount(startBlockHeight, blockHeight - BigInt(1))) {
+          endReached = true;
+          return { value: block, done: false };
         } else {
           return { value: block, done: false };
         }
