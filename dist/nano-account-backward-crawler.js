@@ -94,13 +94,14 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                 break;
             }
         }
+        var endReached = false;
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
                 var block, blockHeight, _accountHistory;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            if (historyIndex === undefined || history.length === 0 || historyIndex >= history.length) {
+                            if (endReached || historyIndex === undefined || history.length === 0 || historyIndex >= history.length) {
                                 return [2 /*return*/, { value: undefined, done: true }];
                             }
                             block = history[historyIndex];
@@ -109,17 +110,18 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                                 return [2 /*return*/, { value: undefined, done: true }];
                             }
                             if (typeof nextHash === "string" && block.hash !== nextHash) {
-                                throw Error("InvalidChain: Expected nextHash: " + nextHash + ", got: " + block.hash);
+                                throw Error("InvalidChain: Expected nextHash: ".concat(nextHash, ", got: ").concat(block.hash));
                             }
                             historyIndex += 1;
                             if (!(historyIndex >= history.length)) return [3 /*break*/, 3];
                             if (!(block.previous === '0000000000000000000000000000000000000000000000000000000000000000')) return [3 /*break*/, 1];
-                            return [2 /*return*/, { value: undefined, done: true }];
+                            endReached = true;
+                            return [2 /*return*/, { value: block, done: false }];
                         case 1:
                             // Guard against infinite loops and making too many RPC calls.
                             rpcIterations += 1;
                             if (rpcIterations > maxRpcIterations) {
-                                throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within " + maxRpcIterations + " requests.");
+                                throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within ".concat(maxRpcIterations, " requests."));
                             }
                             return [4 /*yield*/, this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this.count)];
                         case 2:
@@ -129,8 +131,9 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                             _a.label = 3;
                         case 3:
                             nextHash = block.previous;
-                            if (this.reachedCount(startBlockHeight, blockHeight)) {
-                                return [2 /*return*/, { value: block, done: true }];
+                            if (this.reachedCount(startBlockHeight, blockHeight - BigInt(1))) {
+                                endReached = true;
+                                return [2 /*return*/, { value: block, done: false }];
                             }
                             else {
                                 return [2 /*return*/, { value: block, done: false }];

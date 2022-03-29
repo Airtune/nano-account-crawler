@@ -85,6 +85,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
         var history = this._accountHistory.history;
         var historyIndex = 0;
         var previous = undefined;
+        var endReached = false;
         var startBlockHeight = history[historyIndex] && BigInt(history[historyIndex].height);
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
@@ -92,7 +93,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            if (history.length === 0 || historyIndex >= history.length) {
+                            if (endReached || history.length === 0 || historyIndex >= history.length) {
                                 return [2 /*return*/, { value: undefined, done: true }];
                             }
                             block = history[historyIndex];
@@ -104,7 +105,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                                 return [2 /*return*/, { value: undefined, done: true }];
                             }
                             if (typeof previous === "string" && block.previous !== previous) {
-                                throw Error("InvalidChain: Expected previous: " + previous + " got " + block.previous + " for " + block.hash);
+                                throw Error("InvalidChain: Expected previous: ".concat(previous, " got ").concat(block.previous, " for ").concat(block.hash));
                             }
                             historyIndex += 1;
                             if (!(historyIndex >= history.length)) return [3 /*break*/, 2];
@@ -112,7 +113,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             // Guard against infinite loops and making too many RPC calls.
                             rpcIterations += 1;
                             if (rpcIterations > this._maxRpcIterations) {
-                                throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within " + this._maxRpcIterations + " requests.");
+                                throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within ".concat(this._maxRpcIterations, " requests."));
                             }
                             return [4 /*yield*/, this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._count)];
                         case 1:
@@ -122,8 +123,9 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             _a.label = 2;
                         case 2:
                             previous = block.hash;
-                            if (this.reachedCount(startBlockHeight, blockHeight)) {
-                                return [2 /*return*/, { value: block, done: true }];
+                            if (this.reachedCount(startBlockHeight, blockHeight + BigInt(1))) {
+                                endReached = true;
+                                return [2 /*return*/, { value: block, done: false }];
                             }
                             {
                                 return [2 /*return*/, { value: block, done: false }];

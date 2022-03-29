@@ -70,9 +70,12 @@ var BananoAccountVerifiedForwardCrawler = /** @class */ (function () {
                         case 1:
                             iteratorResult = _a.sent();
                             block = iteratorResult.value;
+                            if (iteratorResult.done) {
+                                return [2 /*return*/, { value: undefined, done: true }];
+                            }
                             // Verify block has expected value for previous
                             if (typeof expectedPrevious === "string" && block.previous !== expectedPrevious) {
-                                throw Error("InvalidChain: expectedPrevious: " + expectedPrevious + " actual block.previous: " + block.previous + " for block: " + block.hash);
+                                throw Error("InvalidChain: expectedPrevious: ".concat(expectedPrevious, " actual block.previous: ").concat(block.previous, " for block: ").concat(block.hash));
                             }
                             tempBlock = {
                                 account: this._nanoAccountForwardCrawler.account,
@@ -83,7 +86,7 @@ var BananoAccountVerifiedForwardCrawler = /** @class */ (function () {
                             };
                             calculatedHash = bananojs.getBlockHash(tempBlock);
                             if (calculatedHash !== block.hash) {
-                                throw Error("InvalidChain: unexpected hash: " + block.hash + " calculated: " + calculatedHash);
+                                throw Error("InvalidChain: unexpected hash: ".concat(block.hash, " calculated: ").concat(calculatedHash));
                             }
                             hash = block.previous;
                             if (hash === "0000000000000000000000000000000000000000000000000000000000000000") {
@@ -92,11 +95,11 @@ var BananoAccountVerifiedForwardCrawler = /** @class */ (function () {
                             hashBytes = bananojs.bananoUtil.hexToBytes(hash);
                             workBytes = bananojs.bananoUtil.hexToBytes(block.work).reverse();
                             if (!bananojs.bananoUtil.isWorkValid(hashBytes, workBytes)) {
-                                throw Error("InvalidChain: unable to verify work for: " + hash + " with work: " + block.work);
+                                throw Error("InvalidChain: unable to verify work for: ".concat(hash, " with work: ").concat(block.work));
                             }
                             // Verify signature
                             if (!bananojs.verify(block.hash, block.signature, this._publicKeyHex)) {
-                                throw Error("InvalidChain: unable to verify signature for block: " + block.hash);
+                                throw Error("InvalidChain: unable to verify signature for block: ".concat(block.hash));
                             }
                             expectedPrevious = block.hash;
                             return [2 /*return*/, iteratorResult];
