@@ -109,7 +109,7 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                             if (blockHeight <= BigInt('0')) {
                                 return [2 /*return*/, { value: undefined, done: true }];
                             }
-                            if (typeof nextHash === "string" && block.hash !== nextHash) {
+                            if (typeof this.accountFilter === "undefined" && typeof nextHash === "string" && block.hash !== nextHash) {
                                 throw Error("InvalidChain: Expected nextHash: ".concat(nextHash, ", got: ").concat(block.hash));
                             }
                             historyIndex += 1;

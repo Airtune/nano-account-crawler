@@ -72,7 +72,7 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
           return { value: undefined, done: true };
         }
 
-        if (typeof previous === "string" && block.previous !== previous) {
+        if (typeof this._accountFilter === "undefined" && typeof previous === "string" && block.previous !== previous) {
           throw Error(`InvalidChain: Expected previous: ${previous} got ${block.previous} for ${block.hash}`);
         }
 
@@ -95,8 +95,9 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
         }
 
         previous = block.hash;
-
-        if (this.reachedCount(startBlockHeight, blockHeight + BigInt(1))) {
+        if (this.exceededCount(startBlockHeight, blockHeight + BigInt(1))) {
+          return { value: undefined, done: true };
+        } else if (this.reachedCount(startBlockHeight, blockHeight + BigInt(1))) {
           endReached = true;
           return { value: block, done: false };
         } {
@@ -104,6 +105,10 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
         }
       }
     };
+  }
+
+  private exceededCount(startBlockHeight: bigint, blockHeight: bigint): boolean {
+    return this._count && (blockHeight - startBlockHeight) > BigInt(this._count);
   }
 
   private reachedCount(startBlockHeight: bigint, blockHeight: bigint): boolean {

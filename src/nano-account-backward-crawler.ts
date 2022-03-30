@@ -79,7 +79,7 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
           return { value: undefined, done: true };
         }
 
-        if (typeof nextHash === "string" && block.hash !== nextHash) {
+        if (typeof this.accountFilter === "undefined" && typeof nextHash === "string" && block.hash !== nextHash) {
           throw Error(`InvalidChain: Expected nextHash: ${nextHash}, got: ${block.hash}`);
         }
 

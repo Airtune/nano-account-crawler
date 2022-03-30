@@ -29,6 +29,21 @@ describe('NanoAccountForwardCrawler using Kalium Banano API', function() {
   it('works with a 3 block count limit on NanoAccountForwardCrawler', async () => {
     await countTest(3);
   });
+
+  it('can crawl forward with account filter', async () => {
+    let selection = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
+    let account = "ban_1twos81eoq9s6d1asht5wwz53m9kw7hkuajad1m4u5otgcsb4qstymquhahf";
+    let _head = "201D206790E46B4CB24CA9F0DB370F8F4BA2E905D66E8DE825D36A9D0E775DAB";
+    let count = 8;
+    const banCrawler = new NanoAccountForwardCrawler(bananode, account, _head, undefined, [selection], count);
+    await banCrawler.initialize();
+
+    let blockCount = 0;
+    for await (const block of banCrawler) {
+      blockCount += 1;
+    }
+    expect(blockCount).to.equal(6);
+  });
 });
 
 async function countTest(expectedCount) {

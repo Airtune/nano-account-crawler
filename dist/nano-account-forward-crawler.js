@@ -104,7 +104,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             if (blockHeight <= BigInt('0') || blockHeight > this._confirmationHeight) {
                                 return [2 /*return*/, { value: undefined, done: true }];
                             }
-                            if (typeof previous === "string" && block.previous !== previous) {
+                            if (typeof this._accountFilter === "undefined" && typeof previous === "string" && block.previous !== previous) {
                                 throw Error("InvalidChain: Expected previous: ".concat(previous, " got ").concat(block.previous, " for ").concat(block.hash));
                             }
                             historyIndex += 1;
@@ -123,7 +123,10 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             _a.label = 2;
                         case 2:
                             previous = block.hash;
-                            if (this.reachedCount(startBlockHeight, blockHeight + BigInt(1))) {
+                            if (this.exceededCount(startBlockHeight, blockHeight + BigInt(1))) {
+                                return [2 /*return*/, { value: undefined, done: true }];
+                            }
+                            else if (this.reachedCount(startBlockHeight, blockHeight + BigInt(1))) {
                                 endReached = true;
                                 return [2 /*return*/, { value: block, done: false }];
                             }
@@ -135,6 +138,9 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                 });
             }); }
         };
+    };
+    NanoAccountForwardCrawler.prototype.exceededCount = function (startBlockHeight, blockHeight) {
+        return this._count && (blockHeight - startBlockHeight) > BigInt(this._count);
     };
     NanoAccountForwardCrawler.prototype.reachedCount = function (startBlockHeight, blockHeight) {
         return this._count && (blockHeight - startBlockHeight) >= BigInt(this._count);
