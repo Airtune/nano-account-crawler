@@ -152,7 +152,7 @@ var NanoNode = /** @class */ (function () {
     };
     NanoNode.prototype.getAccountInfo = function (account) {
         return __awaiter(this, void 0, void 0, function () {
-            var request, response;
+            var request, response, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -160,9 +160,17 @@ var NanoNode = /** @class */ (function () {
                             action: 'account_info',
                             account: account
                         };
-                        return [4 /*yield*/, this.jsonRequest(request)];
+                        _a.label = 1;
                     case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.jsonRequest(request)];
+                    case 2:
                         response = _a.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_3 = _a.sent();
+                        throw (error_3);
+                    case 4:
                         this.validateIsAccountInfo(response);
                         return [2 /*return*/, response];
                 }
@@ -177,7 +185,7 @@ var NanoNode = /** @class */ (function () {
     };
     NanoNode.prototype.jsonRequest = function (jsonRequest) {
         return __awaiter(this, void 0, void 0, function () {
-            var request, response, jsonResponse;
+            var request, response, jsonResponse, error_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -189,13 +197,20 @@ var NanoNode = /** @class */ (function () {
                             },
                             body: JSON.stringify(jsonRequest)
                         };
-                        return [4 /*yield*/, this.fetch(this.nodeApiUrl, request)];
+                        _a.label = 1;
                     case 1:
+                        _a.trys.push([1, 4, , 5]);
+                        return [4 /*yield*/, this.fetch(this.nodeApiUrl, request)];
+                    case 2:
                         response = _a.sent();
                         return [4 /*yield*/, response.json()];
-                    case 2:
+                    case 3:
                         jsonResponse = _a.sent();
-                        return [2 /*return*/, jsonResponse];
+                        return [3 /*break*/, 5];
+                    case 4:
+                        error_4 = _a.sent();
+                        throw (error_4);
+                    case 5: return [2 /*return*/, jsonResponse];
                 }
             });
         });

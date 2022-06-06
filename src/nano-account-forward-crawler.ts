@@ -35,8 +35,12 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
     const historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._count);
     const accountInfoPromise    = this._nanoNode.getAccountInfo(this._account);
 
-    this._accountHistory = await historySegmentPromise;
-    this._accountInfo    = await accountInfoPromise;
+    try {
+      this._accountHistory = await historySegmentPromise;
+      this._accountInfo    = await accountInfoPromise;
+    } catch(error) {
+      throw(error);
+    }
 
     this._confirmationHeight = BigInt('' + this._accountInfo.confirmation_height);
   }
@@ -88,7 +92,12 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
               throw Error(`TooManyRpcIterations: Expected to fetch full history from nano node within ${this._maxRpcIterations} requests.`);
             }
             // TODO: Edge case optimization that reduce count on each rpc iteration so last iteration doesn't include bloat blocks for large requests.
-            const _accountHistory = await this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._count);
+            let _accountHistory;
+            try {
+              _accountHistory = await this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._count);
+            } catch(error) {
+              throw(error);
+            }
             history = _accountHistory.history;
             historyIndex = 0;
           }

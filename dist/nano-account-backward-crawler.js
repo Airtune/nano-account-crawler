@@ -97,7 +97,7 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
         var endReached = false;
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
-                var block, blockHeight, _accountHistory;
+                var block, blockHeight, _accountHistory, error_1;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -113,7 +113,7 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                                 throw Error("InvalidChain: Expected nextHash: ".concat(nextHash, ", got: ").concat(block.hash));
                             }
                             historyIndex += 1;
-                            if (!(historyIndex >= history.length)) return [3 /*break*/, 3];
+                            if (!(historyIndex >= history.length)) return [3 /*break*/, 6];
                             if (!(block.previous === '0000000000000000000000000000000000000000000000000000000000000000')) return [3 /*break*/, 1];
                             endReached = true;
                             return [2 /*return*/, { value: block, done: false }];
@@ -123,13 +123,22 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                             if (rpcIterations > maxRpcIterations) {
                                 throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within ".concat(maxRpcIterations, " requests."));
                             }
-                            return [4 /*yield*/, this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this.count)];
+                            _accountHistory = void 0;
+                            _a.label = 2;
                         case 2:
+                            _a.trys.push([2, 4, , 5]);
+                            return [4 /*yield*/, this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this.count)];
+                        case 3:
                             _accountHistory = _a.sent();
+                            return [3 /*break*/, 5];
+                        case 4:
+                            error_1 = _a.sent();
+                            throw (error_1);
+                        case 5:
                             history = _accountHistory.history;
                             historyIndex = 0;
-                            _a.label = 3;
-                        case 3:
+                            _a.label = 6;
+                        case 6:
                             nextHash = block.previous;
                             if (this.reachedCount(startBlockHeight, blockHeight - BigInt(1))) {
                                 endReached = true;

@@ -13,21 +13,33 @@ describe('NanoAccountForwardCrawler using Kalium Banano API', function() {
 
   it('has a valid chain using for await iterator on NanoAccountForwardCrawler', async () => {
     const banCrawler = new NanoAccountForwardCrawler(bananode, account, previous, '1', undefined, 100);
-    await banCrawler.initialize();
+    try {
+      await banCrawler.initialize();
 
-    let expectedPrevious = previous;
-    for await (const block of banCrawler) {
-      expect(block.previous).to.equal(expectedPrevious);
-      expectedPrevious = block.hash;
+      let expectedPrevious = previous;
+      for await (const block of banCrawler) {
+        expect(block.previous).to.equal(expectedPrevious);
+        expectedPrevious = block.hash;
+      }
+    } catch(error) {
+      throw(error);
     }
   });
 
   it('works with a 1 block count limit on NanoAccountForwardCrawler', async () => {
-    await countTest(1);
+    try {
+      await countTest(1);
+    } catch(error) {
+      throw(error);
+    }
   });
 
   it('works with a 3 block count limit on NanoAccountForwardCrawler', async () => {
-    await countTest(3);
+    try {
+      await countTest(3);
+    } catch(error) {
+      throw(error);
+    }
   });
 
   it('can crawl forward with account filter', async () => {
@@ -36,26 +48,39 @@ describe('NanoAccountForwardCrawler using Kalium Banano API', function() {
     let _head = "201D206790E46B4CB24CA9F0DB370F8F4BA2E905D66E8DE825D36A9D0E775DAB";
     let count = 8;
     const banCrawler = new NanoAccountForwardCrawler(bananode, account, _head, undefined, [selection], count);
-    await banCrawler.initialize();
 
-    let blockCount = 0;
-    for await (const block of banCrawler) {
-      blockCount += 1;
+    let blockCount;
+    try {
+      await banCrawler.initialize();
+
+      blockCount = 0;
+      for await (const block of banCrawler) {
+        blockCount += 1;
+      }
+    } catch(error) {
+      throw(error);
     }
+    
     expect(blockCount).to.equal(6);
   });
 });
 
 async function countTest(expectedCount) {
   const banCrawler = new NanoAccountForwardCrawler(bananode, account, previous, '1', undefined, expectedCount);
-    await banCrawler.initialize();
+    let expectedPrevious, count;
 
-    let expectedPrevious = previous;
-    let count = 0;
-    for await (const block of banCrawler) {
-      count = count + 1;
-      expect(block.previous).to.equal(expectedPrevious);
-      expectedPrevious = block.hash;
+    try {
+      await banCrawler.initialize();
+
+      expectedPrevious = previous;
+      count = 0;
+      for await (const block of banCrawler) {
+        count = count + 1;
+        expect(block.previous).to.equal(expectedPrevious);
+        expectedPrevious = block.hash;
+      }
+    } catch(error) {
+      throw(error);
     }
     expect(count).to.equal(expectedCount);
 }

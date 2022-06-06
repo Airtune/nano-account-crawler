@@ -98,7 +98,12 @@ export class NanoNode {
       account: account
     };
 
-    const response: INanoAccountInfo = await this.jsonRequest(request);
+    let response: INanoAccountInfo;
+    try {
+      response = await this.jsonRequest(request);
+    } catch(error) {
+      throw(error);
+    }
     this.validateIsAccountInfo(response);
 
     return response;
@@ -121,10 +126,15 @@ export class NanoNode {
       },
       body: JSON.stringify(jsonRequest)
     };
-  
-    const response = await this.fetch(this.nodeApiUrl, request);
-    const jsonResponse = await response.json();
-  
+
+    let response, jsonResponse;
+    try {
+      response = await this.fetch(this.nodeApiUrl, request);
+      jsonResponse = await response.json();
+    } catch(error) {
+      throw(error);
+    }
+
     return jsonResponse;
   }
 

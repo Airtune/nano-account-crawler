@@ -20,7 +20,11 @@ export class BananoAccountVerifiedForwardCrawler implements INanoAccountForwardI
   }
 
   async initialize() {
-    await this._nanoAccountForwardCrawler.initialize();
+    try {
+      await this._nanoAccountForwardCrawler.initialize();
+    } catch(error) {
+      throw(error);
+    }
   }
 
   [Symbol.asyncIterator](): AsyncIterator<INanoBlock> {
@@ -30,7 +34,13 @@ export class BananoAccountVerifiedForwardCrawler implements INanoAccountForwardI
 
     return {
       next: async () => {
-        const iteratorResult: IteratorResult<INanoBlock> = await nanoAccountForwardIterator.next();
+        let iteratorResult: IteratorResult<INanoBlock>;
+        try {
+          iteratorResult = await nanoAccountForwardIterator.next();
+        } catch(error) {
+          throw(error);
+        }
+
         const block: INanoBlock = iteratorResult.value;
 
         if (iteratorResult.done) {

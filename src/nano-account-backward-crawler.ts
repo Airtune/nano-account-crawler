@@ -96,7 +96,12 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
             }
 
             // TODO: Edge case optimization that reduce count on each rpc iteration so last iteration doesn't include bloat blocks for large requests.
-            const _accountHistory = await this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this.count);
+            let _accountHistory;
+            try {
+              _accountHistory = await this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this.count);
+            } catch(error) {
+              throw(error);
+            }
             history = _accountHistory.history;
             historyIndex = 0;
           }

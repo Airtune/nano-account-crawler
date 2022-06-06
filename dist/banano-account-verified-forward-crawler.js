@@ -47,12 +47,19 @@ var BananoAccountVerifiedForwardCrawler = /** @class */ (function () {
     }
     BananoAccountVerifiedForwardCrawler.prototype.initialize = function () {
         return __awaiter(this, void 0, void 0, function () {
+            var error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this._nanoAccountForwardCrawler.initialize()];
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this._nanoAccountForwardCrawler.initialize()];
                     case 1:
                         _a.sent();
-                        return [2 /*return*/];
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_1 = _a.sent();
+                        throw (error_1);
+                    case 3: return [2 /*return*/];
                 }
             });
         });
@@ -63,12 +70,19 @@ var BananoAccountVerifiedForwardCrawler = /** @class */ (function () {
         var expectedPrevious = undefined;
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
-                var iteratorResult, block, tempBlock, calculatedHash, hash, hashBytes, workBytes;
+                var iteratorResult, error_2, block, tempBlock, calculatedHash, hash, hashBytes, workBytes;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, nanoAccountForwardIterator.next()];
+                        case 0:
+                            _a.trys.push([0, 2, , 3]);
+                            return [4 /*yield*/, nanoAccountForwardIterator.next()];
                         case 1:
                             iteratorResult = _a.sent();
+                            return [3 /*break*/, 3];
+                        case 2:
+                            error_2 = _a.sent();
+                            throw (error_2);
+                        case 3:
                             block = iteratorResult.value;
                             if (iteratorResult.done) {
                                 return [2 /*return*/, { value: undefined, done: true }];

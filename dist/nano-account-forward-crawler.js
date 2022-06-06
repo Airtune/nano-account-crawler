@@ -56,20 +56,28 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
     }
     NanoAccountForwardCrawler.prototype.initialize = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var historySegmentPromise, accountInfoPromise, _a, _b;
+            var historySegmentPromise, accountInfoPromise, _a, _b, error_1;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._count);
                         accountInfoPromise = this._nanoNode.getAccountInfo(this._account);
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 4, , 5]);
                         _a = this;
                         return [4 /*yield*/, historySegmentPromise];
-                    case 1:
+                    case 2:
                         _a._accountHistory = _c.sent();
                         _b = this;
                         return [4 /*yield*/, accountInfoPromise];
-                    case 2:
+                    case 3:
                         _b._accountInfo = _c.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        error_1 = _c.sent();
+                        throw (error_1);
+                    case 5:
                         this._confirmationHeight = BigInt('' + this._accountInfo.confirmation_height);
                         return [2 /*return*/];
                 }
@@ -89,7 +97,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
         var startBlockHeight = history[historyIndex] && BigInt(history[historyIndex].height);
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
-                var block, blockHeight, _accountHistory;
+                var block, blockHeight, _accountHistory, error_2;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -108,20 +116,29 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                                 throw Error("InvalidChain: Expected previous: ".concat(previous, " got ").concat(block.previous, " for ").concat(block.hash));
                             }
                             historyIndex += 1;
-                            if (!(historyIndex >= history.length)) return [3 /*break*/, 2];
-                            if (!this._nanoNode.hasMoreHistory(history, this._confirmationHeight)) return [3 /*break*/, 2];
+                            if (!(historyIndex >= history.length)) return [3 /*break*/, 5];
+                            if (!this._nanoNode.hasMoreHistory(history, this._confirmationHeight)) return [3 /*break*/, 5];
                             // Guard against infinite loops and making too many RPC calls.
                             rpcIterations += 1;
                             if (rpcIterations > this._maxRpcIterations) {
                                 throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within ".concat(this._maxRpcIterations, " requests."));
                             }
-                            return [4 /*yield*/, this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._count)];
+                            _accountHistory = void 0;
+                            _a.label = 1;
                         case 1:
+                            _a.trys.push([1, 3, , 4]);
+                            return [4 /*yield*/, this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._count)];
+                        case 2:
                             _accountHistory = _a.sent();
+                            return [3 /*break*/, 4];
+                        case 3:
+                            error_2 = _a.sent();
+                            throw (error_2);
+                        case 4:
                             history = _accountHistory.history;
                             historyIndex = 0;
-                            _a.label = 2;
-                        case 2:
+                            _a.label = 5;
+                        case 5:
                             previous = block.hash;
                             if (this.exceededCount(startBlockHeight, blockHeight + BigInt(1))) {
                                 return [2 /*return*/, { value: undefined, done: true }];
