@@ -33,8 +33,12 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
     const historySegmentPromise = this.nanoNode.getBackwardHistory(this.account, this.head, "0", this.accountFilter, this.count);
     const accountInfoPromise    = this.nanoNode.getAccountInfo(this.account);
 
-    this.accountHistory = await historySegmentPromise;
-    this.accountInfo    = await accountInfoPromise;
+    try {
+      this.accountHistory = await historySegmentPromise;
+      this.accountInfo    = await accountInfoPromise;
+    } catch (error) {
+      throw(error);
+    }
 
     this.confirmationHeight = BigInt('' + this.accountInfo.confirmation_height);
   }

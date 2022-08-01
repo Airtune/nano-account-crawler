@@ -53,20 +53,28 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
     }
     NanoAccountBackwardCrawler.prototype.initialize = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var historySegmentPromise, accountInfoPromise, _a, _b;
+            var historySegmentPromise, accountInfoPromise, _a, _b, error_1;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         historySegmentPromise = this.nanoNode.getBackwardHistory(this.account, this.head, "0", this.accountFilter, this.count);
                         accountInfoPromise = this.nanoNode.getAccountInfo(this.account);
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 4, , 5]);
                         _a = this;
                         return [4 /*yield*/, historySegmentPromise];
-                    case 1:
+                    case 2:
                         _a.accountHistory = _c.sent();
                         _b = this;
                         return [4 /*yield*/, accountInfoPromise];
-                    case 2:
+                    case 3:
                         _b.accountInfo = _c.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        error_1 = _c.sent();
+                        throw (error_1);
+                    case 5:
                         this.confirmationHeight = BigInt('' + this.accountInfo.confirmation_height);
                         return [2 /*return*/];
                 }
@@ -97,7 +105,7 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
         var endReached = false;
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
-                var block, blockHeight, _accountHistory, error_1;
+                var block, blockHeight, _accountHistory, error_2;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -132,8 +140,8 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                             _accountHistory = _a.sent();
                             return [3 /*break*/, 5];
                         case 4:
-                            error_1 = _a.sent();
-                            throw (error_1);
+                            error_2 = _a.sent();
+                            throw (error_2);
                         case 5:
                             history = _accountHistory.history;
                             historyIndex = 0;
