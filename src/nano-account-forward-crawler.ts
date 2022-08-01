@@ -32,10 +32,9 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
   }
 
   async initialize() {
-    const historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._count);
-    const accountInfoPromise    = this._nanoNode.getAccountInfo(this._account);
-
     try {
+      const historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._count);
+      const accountInfoPromise    = this._nanoNode.getAccountInfo(this._account);
       this._accountHistory = await historySegmentPromise;
       this._accountInfo    = await accountInfoPromise;
     } catch(error) {

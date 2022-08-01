@@ -1,6 +1,6 @@
 {
   "name": "nano-account-crawler",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Makes block iterators that make multiple RPC calls to Nano nodes if neccessary. Block confirmation height is checked so only confirmed blocks are iterated.",
   "repository": "https://github.com/Airtune/nano-account-crawler",
   "files": [
