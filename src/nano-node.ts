@@ -1,9 +1,10 @@
 import {
   INanoAccountHistory,
-  INanoAccountInfo
+  INanoAccountInfo,
+  TAccount,
+  TStringNumber,
+  TBlockHash
 } from './nano-interfaces';
-
-
 
 export class NanoNode {
   private nodeApiUrl: string;
@@ -14,7 +15,7 @@ export class NanoNode {
     this.fetch = fetch;
   }
 
-  async getForwardHistory(account: string, head: string = undefined, offset: string = "0", account_filter: string[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
+  async getForwardHistory(account: TAccount, head: TBlockHash = undefined, offset: TStringNumber = "0", account_filter: TAccount[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
     const request: any = {
       action: 'account_history',
       account: account,
@@ -54,7 +55,7 @@ export class NanoNode {
     return response;
   }
 
-  async getBackwardHistory(account: string, head: string = undefined, offset: string = "0", account_filter: string[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
+  async getBackwardHistory(account: TAccount, head: TBlockHash = undefined, offset: TStringNumber = "0", account_filter: TAccount[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
     const request: any = {
       action: 'account_history',
       account: account,
@@ -92,7 +93,7 @@ export class NanoNode {
     return response;
   }
 
-  async getAccountInfo(account): Promise<INanoAccountInfo> {
+  async getAccountInfo(account: TAccount): Promise<INanoAccountInfo> {
     const request = {
       action: 'account_info',
       account: account
@@ -128,13 +129,8 @@ export class NanoNode {
     };
 
     let response, jsonResponse;
-    try {
-      response = await this.fetch(this.nodeApiUrl, request);
-      jsonResponse = await response.json();
-    } catch(error) {
-      throw(error);
-    }
-
+    response = await this.fetch(this.nodeApiUrl, request).catch((error) => { throw(error); });
+    jsonResponse = await response.json().catch((error) => { throw(error); });
     return jsonResponse;
   }
 

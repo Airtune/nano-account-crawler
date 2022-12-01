@@ -39,42 +39,36 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NanoAccountBackwardCrawler = void 0;
 // Iterable that makes requests as required when looping through blocks in an account.
 var NanoAccountBackwardCrawler = /** @class */ (function () {
-    function NanoAccountBackwardCrawler(nanoNode, account, head, accountFilter, count) {
+    function NanoAccountBackwardCrawler(nanoNode, account, head, accountFilter, count, maxBlocksPerRequest) {
         if (head === void 0) { head = undefined; }
         if (accountFilter === void 0) { accountFilter = undefined; }
         if (count === void 0) { count = undefined; }
+        if (maxBlocksPerRequest === void 0) { maxBlocksPerRequest = 3000; }
         this.nanoNode = nanoNode;
         this.account = account;
         this.head = head;
         this.accountInfo = null;
         this.accountFilter = accountFilter;
         this.count = count;
+        this._maxBlocksPerRequest = Math.min(count || maxBlocksPerRequest, maxBlocksPerRequest);
         this._maxRpcIterations = 1000;
     }
     NanoAccountBackwardCrawler.prototype.initialize = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var historySegmentPromise, accountInfoPromise, _a, _b, error_1;
+            var historySegmentPromise, accountInfoPromise, _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        historySegmentPromise = this.nanoNode.getBackwardHistory(this.account, this.head, "0", this.accountFilter, this.count);
+                        historySegmentPromise = this.nanoNode.getBackwardHistory(this.account, this.head, "0", this.accountFilter, this._maxBlocksPerRequest);
                         accountInfoPromise = this.nanoNode.getAccountInfo(this.account);
-                        _c.label = 1;
-                    case 1:
-                        _c.trys.push([1, 4, , 5]);
                         _a = this;
-                        return [4 /*yield*/, historySegmentPromise];
-                    case 2:
+                        return [4 /*yield*/, historySegmentPromise.catch(function (error) { throw (error); })];
+                    case 1:
                         _a.accountHistory = _c.sent();
                         _b = this;
-                        return [4 /*yield*/, accountInfoPromise];
-                    case 3:
+                        return [4 /*yield*/, accountInfoPromise.catch(function (error) { throw (error); })];
+                    case 2:
                         _b.accountInfo = _c.sent();
-                        return [3 /*break*/, 5];
-                    case 4:
-                        error_1 = _c.sent();
-                        throw (error_1);
-                    case 5:
                         this.confirmationHeight = BigInt('' + this.accountInfo.confirmation_height);
                         return [2 /*return*/];
                 }
@@ -105,7 +99,7 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
         var endReached = false;
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
-                var block, blockHeight, _accountHistory, error_2;
+                var block, blockHeight, _accountHistory, error_1;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -135,13 +129,13 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                             _a.label = 2;
                         case 2:
                             _a.trys.push([2, 4, , 5]);
-                            return [4 /*yield*/, this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this.count)];
+                            return [4 /*yield*/, this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this._maxBlocksPerRequest)];
                         case 3:
                             _accountHistory = _a.sent();
                             return [3 /*break*/, 5];
                         case 4:
-                            error_2 = _a.sent();
-                            throw (error_2);
+                            error_1 = _a.sent();
+                            throw (error_1);
                         case 5:
                             history = _accountHistory.history;
                             historyIndex = 0;
@@ -164,6 +158,13 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
     NanoAccountBackwardCrawler.prototype.reachedCount = function (startBlockHeight, blockHeight) {
         return this.count && (startBlockHeight - blockHeight) >= BigInt(this.count);
     };
+    Object.defineProperty(NanoAccountBackwardCrawler.prototype, "maxBlocksPerRequest", {
+        get: function () {
+            return this.maxBlocksPerRequest;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(NanoAccountBackwardCrawler.prototype, "maxRpcIterations", {
         get: function () {
             return this._maxRpcIterations;

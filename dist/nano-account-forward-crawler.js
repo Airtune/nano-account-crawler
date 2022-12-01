@@ -39,11 +39,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NanoAccountForwardCrawler = void 0;
 // Iterable that makes requests as required when looping through blocks in an account.
 var NanoAccountForwardCrawler = /** @class */ (function () {
-    function NanoAccountForwardCrawler(nanoNode, account, head, offset, accountFilter, count) {
+    function NanoAccountForwardCrawler(nanoNode, account, head, offset, accountFilter, count, maxBlocksPerRequest) {
         if (head === void 0) { head = undefined; }
         if (offset === void 0) { offset = undefined; }
         if (accountFilter === void 0) { accountFilter = undefined; }
         if (count === void 0) { count = undefined; }
+        if (maxBlocksPerRequest === void 0) { maxBlocksPerRequest = 3000; }
         this._nanoNode = nanoNode;
         this._account = account;
         this._head = head;
@@ -52,6 +53,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
         this._accountHistory = undefined;
         this._accountInfo = undefined;
         this._count = count;
+        this._maxBlocksPerRequest = Math.min(count || maxBlocksPerRequest, maxBlocksPerRequest);
         this._maxRpcIterations = 1000;
     }
     NanoAccountForwardCrawler.prototype.initialize = function () {
@@ -60,24 +62,22 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._count);
+                        _c.trys.push([0, 3, , 4]);
+                        historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._maxBlocksPerRequest);
                         accountInfoPromise = this._nanoNode.getAccountInfo(this._account);
-                        _c.label = 1;
-                    case 1:
-                        _c.trys.push([1, 4, , 5]);
                         _a = this;
                         return [4 /*yield*/, historySegmentPromise];
-                    case 2:
+                    case 1:
                         _a._accountHistory = _c.sent();
                         _b = this;
                         return [4 /*yield*/, accountInfoPromise];
-                    case 3:
+                    case 2:
                         _b._accountInfo = _c.sent();
-                        return [3 /*break*/, 5];
-                    case 4:
+                        return [3 /*break*/, 4];
+                    case 3:
                         error_1 = _c.sent();
                         throw (error_1);
-                    case 5:
+                    case 4:
                         this._confirmationHeight = BigInt('' + this._accountInfo.confirmation_height);
                         return [2 /*return*/];
                 }
@@ -127,7 +127,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             _a.label = 1;
                         case 1:
                             _a.trys.push([1, 3, , 4]);
-                            return [4 /*yield*/, this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._count)];
+                            return [4 /*yield*/, this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._maxBlocksPerRequest)];
                         case 2:
                             _accountHistory = _a.sent();
                             return [3 /*break*/, 4];
@@ -165,6 +165,13 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
     Object.defineProperty(NanoAccountForwardCrawler.prototype, "account", {
         get: function () {
             return this._account;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(NanoAccountForwardCrawler.prototype, "maxBlocksPerRequest", {
+        get: function () {
+            return this._maxBlocksPerRequest;
         },
         enumerable: false,
         configurable: true

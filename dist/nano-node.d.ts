@@ -1,11 +1,11 @@
-import { INanoAccountHistory, INanoAccountInfo } from './nano-interfaces';
+import { INanoAccountHistory, INanoAccountInfo, TAccount, TStringNumber, TBlockHash } from './nano-interfaces';
 export declare class NanoNode {
     private nodeApiUrl;
     private fetch;
     constructor(nodeApiUrl: string, fetch: Function);
-    getForwardHistory(account: string, head?: string, offset?: string, account_filter?: string[], count?: number, max_retries?: number): Promise<INanoAccountHistory>;
-    getBackwardHistory(account: string, head?: string, offset?: string, account_filter?: string[], count?: number, max_retries?: number): Promise<INanoAccountHistory>;
-    getAccountInfo(account: any): Promise<INanoAccountInfo>;
+    getForwardHistory(account: TAccount, head?: TBlockHash, offset?: TStringNumber, account_filter?: TAccount[], count?: number, max_retries?: number): Promise<INanoAccountHistory>;
+    getBackwardHistory(account: TAccount, head?: TBlockHash, offset?: TStringNumber, account_filter?: TAccount[], count?: number, max_retries?: number): Promise<INanoAccountHistory>;
+    getAccountInfo(account: TAccount): Promise<INanoAccountInfo>;
     hasMoreHistory(history: any, confirmationHeight: BigInt): boolean;
     historyIsEmpty(history: any): boolean;
     jsonRequest(jsonRequest: any): Promise<any>;

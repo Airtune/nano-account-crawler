@@ -3,23 +3,27 @@ import {
   INanoAccountHistory,
   INanoAccountInfo,
   INanoAccountForwardIterable,
-  INanoBlock
+  INanoBlock,
+  TAccount,
+  TBlockHash,
+  TStringNumber
 } from './nano-interfaces';
 
 // Iterable that makes requests as required when looping through blocks in an account.
 export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
   private _nanoNode: NanoNode;
-  private _account: string;
-  private _head: string;
-  private _offset: string;
-  private _accountFilter: string[];
+  private _account: TAccount;
+  private _head: TBlockHash;
+  private _offset: TStringNumber;
+  private _accountFilter: TAccount[];
   private _accountHistory: INanoAccountHistory;
   private _accountInfo: INanoAccountInfo;
   private _confirmationHeight: BigInt;
   private _count: number;
+  private _maxBlocksPerRequest: number;
   private _maxRpcIterations: number;
 
-  constructor(nanoNode: NanoNode, account: string, head: string = undefined, offset: string = undefined, accountFilter: string[] = undefined, count: number = undefined) {
+  constructor(nanoNode: NanoNode, account: TAccount, head: TBlockHash = undefined, offset: TStringNumber = undefined, accountFilter: TAccount[] = undefined, count: number = undefined, maxBlocksPerRequest: number = 3000) {
     this._nanoNode = nanoNode;
     this._account = account;
     this._head = head;
@@ -28,12 +32,13 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
     this._accountHistory = undefined;
     this._accountInfo = undefined;
     this._count = count;
+    this._maxBlocksPerRequest = Math.min(count || maxBlocksPerRequest, maxBlocksPerRequest);
     this._maxRpcIterations = 1000;
   }
 
   async initialize() {
     try {
-      const historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._count);
+      const historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._maxBlocksPerRequest);
       const accountInfoPromise    = this._nanoNode.getAccountInfo(this._account);
       this._accountHistory = await historySegmentPromise;
       this._accountInfo    = await accountInfoPromise;
@@ -93,7 +98,7 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
             // TODO: Edge case optimization that reduce count on each rpc iteration so last iteration doesn't include bloat blocks for large requests.
             let _accountHistory;
             try {
-              _accountHistory = await this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._count);
+              _accountHistory = await this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._maxBlocksPerRequest);
             } catch(error) {
               throw(error);
             }
@@ -125,6 +130,10 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
 
   public get account(): string {
     return this._account;
+  }
+
+  public get maxBlocksPerRequest(): number {
+    return this._maxBlocksPerRequest;
   }
 
   public get maxRpcIterations(): number {

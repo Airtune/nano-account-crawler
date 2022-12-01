@@ -3,41 +3,41 @@ import {
   INanoAccountHistory,
   INanoAccountInfo,
   INanoAccountBackwardIterable,
-  INanoBlock
+  INanoBlock,
+  TAccount,
+  TBlockHash
 } from './nano-interfaces';
 
 // Iterable that makes requests as required when looping through blocks in an account.
 export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable {
   public nanoNode: NanoNode;
-  public account: string;
-  public head: string;
-  public accountFilter: string[];
+  public account: TAccount;
+  public head: TBlockHash;
+  public accountFilter: TAccount[];
 
   private accountHistory: INanoAccountHistory;
   private accountInfo: INanoAccountInfo;
   private confirmationHeight: BigInt;
   private count: number;
+  private _maxBlocksPerRequest: number;
   private _maxRpcIterations: number;
 
-  constructor(nanoNode: NanoNode, account: string, head: string = undefined, accountFilter: string[] = undefined, count: number = undefined) {
+  constructor(nanoNode: NanoNode, account: TAccount, head: string = undefined, accountFilter: TAccount[] = undefined, count: number = undefined, maxBlocksPerRequest: number = 3000) {
     this.nanoNode = nanoNode;
     this.account = account;
     this.head = head;
     this.accountInfo = null;
     this.accountFilter = accountFilter;
     this.count = count;
+    this._maxBlocksPerRequest = Math.min(count || maxBlocksPerRequest, maxBlocksPerRequest);
     this._maxRpcIterations = 1000;
   }
 
   async initialize() {
-    try {
-      const historySegmentPromise = this.nanoNode.getBackwardHistory(this.account, this.head, "0", this.accountFilter, this.count);
-      const accountInfoPromise    = this.nanoNode.getAccountInfo(this.account);
-      this.accountHistory = await historySegmentPromise;
-      this.accountInfo    = await accountInfoPromise;
-    } catch (error) {
-      throw(error);
-    }
+    const historySegmentPromise = this.nanoNode.getBackwardHistory(this.account, this.head, "0", this.accountFilter, this._maxBlocksPerRequest);
+    const accountInfoPromise    = this.nanoNode.getAccountInfo(this.account);
+    this.accountHistory = await historySegmentPromise.catch((error) => { throw(error); });
+    this.accountInfo    = await accountInfoPromise.catch((error) => { throw(error); });
 
     this.confirmationHeight = BigInt('' + this.accountInfo.confirmation_height);
   }
@@ -101,7 +101,7 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
             // TODO: Edge case optimization that reduce count on each rpc iteration so last iteration doesn't include bloat blocks for large requests.
             let _accountHistory;
             try {
-              _accountHistory = await this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this.count);
+              _accountHistory = await this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this._maxBlocksPerRequest);
             } catch(error) {
               throw(error);
             }
@@ -124,6 +124,10 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
 
   private reachedCount(startBlockHeight: bigint, blockHeight: bigint): boolean {
     return this.count && (startBlockHeight - blockHeight) >= BigInt(this.count);
+  }
+
+  public get maxBlocksPerRequest(): number {
+    return this.maxBlocksPerRequest;
   }
 
   public get maxRpcIterations(): number {

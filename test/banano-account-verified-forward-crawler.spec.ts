@@ -5,11 +5,11 @@ import { NanoNode } from '../src/nano-node';
 import { NanoAccountForwardCrawler } from '../src/nano-account-forward-crawler';
 import { BananoAccountVerifiedForwardCrawler } from '../src/banano-account-verified-forward-crawler';
 
-const bananode = new NanoNode('https://kaliumapi.appditto.com/api', fetch);
+const bananode = new NanoNode('http://145.239.223.42:7072', fetch);
 const account = 'ban_1iw8sa3o57s6iso15hhzrs8todje1c3c5fcjwmneab7nz1o6d781cxxtddaf';
 const previous = '2DA1AE13457652BC5136DF83E05CB959A6EF5BCAED83E64978FD2B2D8080020A';
 
-describe('BananoAccountVerifiedForwardCrawler using Kalium Banano API', function() {
+describe('BananoAccountVerifiedForwardCrawler using Banano Honey API', function() {
   this.timeout(20000);
 
   it('has a valid chain using for await iterator on BananoAccountVerifiedForwardCrawler', async () => {
