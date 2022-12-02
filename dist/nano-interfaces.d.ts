@@ -11,7 +11,7 @@ export interface INanoBlock {
     account: TAccount;
     amount: TStringBigInt;
     balance: TStringBigInt;
-    representative: string;
+    representative: TAccount;
     previous: string;
     hash: TBlockHash;
     link: TPublicKey;
