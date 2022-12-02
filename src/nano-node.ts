@@ -2,7 +2,7 @@ import {
   INanoAccountHistory,
   INanoAccountInfo,
   TAccount,
-  TStringNumber,
+  TStringBigInt,
   TBlockHash
 } from './nano-interfaces';
 
@@ -10,12 +10,12 @@ export class NanoNode {
   private nodeApiUrl: string;
   private fetch: Function;
 
-  constructor(nodeApiUrl: string, fetch: Function) {
+  constructor(nodeApiUrl: string, fetch: Function) { 
     this.nodeApiUrl = nodeApiUrl;
     this.fetch = fetch;
   }
 
-  async getForwardHistory(account: TAccount, head: TBlockHash = undefined, offset: TStringNumber = "0", account_filter: TAccount[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
+  async getForwardHistory(account: TAccount, head: TBlockHash = undefined, offset: TStringBigInt = "0", account_filter: TAccount[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
     const request: any = {
       action: 'account_history',
       account: account,
@@ -55,7 +55,7 @@ export class NanoNode {
     return response;
   }
 
-  async getBackwardHistory(account: TAccount, head: TBlockHash = undefined, offset: TStringNumber = "0", account_filter: TAccount[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
+  async getBackwardHistory(account: TAccount, head: TBlockHash = undefined, offset: TStringBigInt = "0", account_filter: TAccount[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
     const request: any = {
       action: 'account_history',
       account: account,

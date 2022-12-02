@@ -6,7 +6,7 @@ import {
   INanoBlock,
   TAccount,
   TBlockHash,
-  TStringNumber
+  TStringBigInt
 } from './nano-interfaces';
 
 // Iterable that makes requests as required when looping through blocks in an account.
@@ -14,7 +14,7 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
   private _nanoNode: NanoNode;
   private _account: TAccount;
   private _head: TBlockHash;
-  private _offset: TStringNumber;
+  private _offset: TStringBigInt;
   private _accountFilter: TAccount[];
   private _accountHistory: INanoAccountHistory;
   private _accountInfo: INanoAccountInfo;
@@ -23,7 +23,7 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
   private _maxBlocksPerRequest: number;
   private _maxRpcIterations: number;
 
-  constructor(nanoNode: NanoNode, account: TAccount, head: TBlockHash = undefined, offset: TStringNumber = undefined, accountFilter: TAccount[] = undefined, count: number = undefined, maxBlocksPerRequest: number = 3000) {
+  constructor(nanoNode: NanoNode, account: TAccount, head: TBlockHash = undefined, offset: TStringBigInt = undefined, accountFilter: TAccount[] = undefined, count: number = undefined, maxBlocksPerRequest: number = 3000) {
     this._nanoNode = nanoNode;
     this._account = account;
     this._head = head;

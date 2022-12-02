@@ -1,7 +1,7 @@
 export type TAccount = `${'ban_' | 'nano_'}${string}`;
 export type TNanoBlockType = "state";
 export type TNanoBlockSubtype = "send" | "receive" | "open" | "change" | "epoch";
-export type TStringNumber = `${number}`;
+export type TStringBigInt = `${number}`;
 export type TBlockHeight = `${number}`;
 export type TBlockHash = string;
 export type TPublicKey = string;
@@ -10,8 +10,8 @@ export interface INanoBlock {
   type: TNanoBlockType;
   subtype: TNanoBlockSubtype;
   account: TAccount;
-  amount: TStringNumber;
-  balance: TStringNumber;
+  amount: TStringBigInt;
+  balance: TStringBigInt;
   representative: string;
   previous: string;
   hash: TBlockHash;
@@ -32,11 +32,11 @@ export interface INanoAccountInfo {
   frontier: TBlockHash,
   open_block: TBlockHash,
   representative_block: TBlockHash,
-  balance: TStringNumber,
+  balance: TStringBigInt,
   modified_timestamp: string,
-  block_count: TStringNumber,
+  block_count: TStringBigInt,
   account_version: string,
-  confirmation_height: TStringNumber, 
+  confirmation_height: TStringBigInt, 
   confirmation_height_frontier: TBlockHash
 }
 
