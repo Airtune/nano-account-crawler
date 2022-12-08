@@ -82,7 +82,7 @@ var NanoNode = /** @class */ (function () {
                         return [4 /*yield*/, this.jsonRequest(request)];
                     case 3:
                         response = _a.sent();
-                        this.validateIsAccountHistory(response);
+                        this.validateIsAccountHistory(account, response);
                         this.validateAccount(account, response);
                         return [3 /*break*/, 6];
                     case 4:
@@ -135,7 +135,7 @@ var NanoNode = /** @class */ (function () {
                         return [4 /*yield*/, this.jsonRequest(request)];
                     case 3:
                         response = _a.sent();
-                        this.validateIsAccountHistory(response);
+                        this.validateIsAccountHistory(account, response);
                         this.validateAccount(account, response);
                         return [3 /*break*/, 6];
                     case 4:
@@ -211,22 +211,22 @@ var NanoNode = /** @class */ (function () {
     /////////////
     // private //
     /////////////
-    NanoNode.prototype.validateIsAccountHistory = function (accountHistory) {
+    NanoNode.prototype.validateIsAccountHistory = function (account, accountHistory) {
         if (typeof (accountHistory) !== 'object') {
-            throw Error("UnexpectedNanoNodeResponse: Unexpected accountHistory. Expected type to be 'object', got: ".concat(typeof (accountHistory)));
+            throw Error("UnexpectedNanoNodeResponse: Unexpected accountHistory. Expected type to be 'object', got: ".concat(typeof (accountHistory), " for ").concat(account));
         }
         if (accountHistory.hasOwnProperty('error')) {
-            throw Error("NanoNodeError: ".concat(accountHistory.error));
+            throw Error("NanoNodeError: ".concat(accountHistory.error, " for ").concat(account));
         }
         if (typeof (accountHistory.account) !== 'string') {
-            throw Error("UnexpectedNanoNodeResponse: Unexpected accountHistory.account. Expected type to be 'string', got: ".concat(typeof (accountHistory.account)));
+            throw Error("UnexpectedNanoNodeResponse: Unexpected accountHistory.account. Expected type to be 'string', got: ".concat(typeof (accountHistory.account), " for ").concat(account));
         }
         if (!accountHistory.hasOwnProperty('history')) {
-            throw Error("UnexpectedNanoNodeResponse: accountHistory doesn't have property 'history'");
+            throw Error("UnexpectedNanoNodeResponse: accountHistory doesn't have property 'history' for ".concat(account));
         }
         var _prototype = Object.prototype.toString.call(accountHistory.history);
         if (!(_prototype === '[object String]' || _prototype === '[object Array]')) {
-            throw Error("UnexpectedNanoNodeResponse: accountHistory.history not of type array or string. Got: ".concat(_prototype));
+            throw Error("UnexpectedNanoNodeResponse: accountHistory.history not of type array or string. Got: ".concat(_prototype, " for ").concat(account));
         }
     };
     NanoNode.prototype.validateIsAccountInfo = function (accountInfo) {

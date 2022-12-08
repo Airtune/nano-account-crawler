@@ -42,7 +42,7 @@ export class NanoNode {
 
       try {
         response = await this.jsonRequest(request);
-        this.validateIsAccountHistory(response);
+        this.validateIsAccountHistory(account, response);
         this.validateAccount(account, response);
         break;
       } catch (error) {
@@ -80,7 +80,7 @@ export class NanoNode {
 
       try {
         response = await this.jsonRequest(request);
-        this.validateIsAccountHistory(response);
+        this.validateIsAccountHistory(account, response);
         this.validateAccount(account, response);
         break;
       } catch (error) {
@@ -138,26 +138,26 @@ export class NanoNode {
   // private //
   /////////////
 
-  private validateIsAccountHistory(accountHistory: INanoAccountHistory) {
+  private validateIsAccountHistory(account: TAccount, accountHistory: INanoAccountHistory) {
     if (typeof(accountHistory) !== 'object') {
-      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountHistory. Expected type to be 'object', got: ${typeof(accountHistory)}`);
+      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountHistory. Expected type to be 'object', got: ${typeof(accountHistory)} for ${account}`);
     }
 
     if (accountHistory.hasOwnProperty('error')) {
-      throw Error(`NanoNodeError: ${accountHistory.error}`);
+      throw Error(`NanoNodeError: ${accountHistory.error} for ${account}`);
     }
 
     if (typeof(accountHistory.account) !== 'string') {
-      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountHistory.account. Expected type to be 'string', got: ${typeof(accountHistory.account)}`);
+      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountHistory.account. Expected type to be 'string', got: ${typeof(accountHistory.account)} for ${account}`);
     }
 
     if (!accountHistory.hasOwnProperty('history')) {
-      throw Error("UnexpectedNanoNodeResponse: accountHistory doesn't have property 'history'");
+      throw Error(`UnexpectedNanoNodeResponse: accountHistory doesn't have property 'history' for ${account}`);
     }
 
     const _prototype: string = Object.prototype.toString.call(accountHistory.history);
     if (!(_prototype === '[object String]' || _prototype === '[object Array]')) {
-      throw Error(`UnexpectedNanoNodeResponse: accountHistory.history not of type array or string. Got: ${_prototype}`);
+      throw Error(`UnexpectedNanoNodeResponse: accountHistory.history not of type array or string. Got: ${_prototype} for ${account}`);
     }
   }
 
