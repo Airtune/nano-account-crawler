@@ -105,7 +105,7 @@ export class NanoNode {
     } catch(error) {
       throw(error);
     }
-    this.validateIsAccountInfo(response);
+    this.validateIsAccountInfo(account, response);
 
     return response;
   }
@@ -161,17 +161,17 @@ export class NanoNode {
     }
   }
 
-  private validateIsAccountInfo(accountInfo: INanoAccountInfo) {
+  private validateIsAccountInfo(account: TAccount, accountInfo: INanoAccountInfo) {
     if (typeof(accountInfo) !== 'object') {
-      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountInfo. Expected type to be 'object', got: ${typeof(accountInfo)}`);
+      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountInfo. Expected type to be 'object', got: '${typeof(accountInfo)}' for ${account}`);
     }
 
     if (accountInfo.hasOwnProperty('error')) {
-      throw Error(`NanoNodeError: ${accountInfo.error}`);
+      throw Error(`NanoNodeError: ${accountInfo.error} for ${account}`);
     }
 
     if (typeof(accountInfo['confirmation_height']) !== 'string') {
-      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountInfo['confirmation_height']. Expected type to be 'string', got: ${typeof(accountInfo['confirmation_height'])}`);
+      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountInfo['confirmation_height']. Expected type to be 'string', got: ${typeof(accountInfo['confirmation_height'])} for ${account}`);
     }
   }
 
