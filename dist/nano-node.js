@@ -171,7 +171,7 @@ var NanoNode = /** @class */ (function () {
                         error_3 = _a.sent();
                         throw (error_3);
                     case 4:
-                        this.validateIsAccountInfo(response);
+                        this.validateIsAccountInfo(account, response);
                         return [2 /*return*/, response];
                 }
             });
@@ -229,15 +229,15 @@ var NanoNode = /** @class */ (function () {
             throw Error("UnexpectedNanoNodeResponse: accountHistory.history not of type array or string. Got: ".concat(_prototype, " for ").concat(account));
         }
     };
-    NanoNode.prototype.validateIsAccountInfo = function (accountInfo) {
+    NanoNode.prototype.validateIsAccountInfo = function (account, accountInfo) {
         if (typeof (accountInfo) !== 'object') {
-            throw Error("UnexpectedNanoNodeResponse: Unexpected accountInfo. Expected type to be 'object', got: ".concat(typeof (accountInfo)));
+            throw Error("UnexpectedNanoNodeResponse: Unexpected accountInfo. Expected type to be 'object', got: '".concat(typeof (accountInfo), "' for ").concat(account));
         }
         if (accountInfo.hasOwnProperty('error')) {
-            throw Error("NanoNodeError: ".concat(accountInfo.error));
+            throw Error("NanoNodeError: ".concat(accountInfo.error, " for ").concat(account));
         }
         if (typeof (accountInfo['confirmation_height']) !== 'string') {
-            throw Error("UnexpectedNanoNodeResponse: Unexpected accountInfo['confirmation_height']. Expected type to be 'string', got: ".concat(typeof (accountInfo['confirmation_height'])));
+            throw Error("UnexpectedNanoNodeResponse: Unexpected accountInfo['confirmation_height']. Expected type to be 'string', got: ".concat(typeof (accountInfo['confirmation_height']), " for ").concat(account));
         }
     };
     NanoNode.prototype.validateAccount = function (account, accountHistory) {
