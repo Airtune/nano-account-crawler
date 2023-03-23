@@ -46,7 +46,7 @@ export class NanoNode {
         this.validateAccount(account, response);
         break;
       } catch (error) {
-        if (retries >= max_retries || !error.message.match(/^NanoNodeError:/)) {
+        if (retries >= max_retries || !error.message.match(/NanoNodeError:/)) {
           throw error;
         }
       }
@@ -84,7 +84,7 @@ export class NanoNode {
         this.validateAccount(account, response);
         break;
       } catch (error) {
-        if (retries >= max_retries || !error.message.match(/^NanoNodeError:/)) {
+        if (retries >= max_retries || !error.message.match(/NanoNodeError:/)) {
           throw error;
         }
       }

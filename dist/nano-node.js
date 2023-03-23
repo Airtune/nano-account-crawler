@@ -87,7 +87,7 @@ var NanoNode = /** @class */ (function () {
                         return [3 /*break*/, 6];
                     case 4:
                         error_1 = _a.sent();
-                        if (retries >= max_retries || !error_1.message.match(/^NanoNodeError:/)) {
+                        if (retries >= max_retries || !error_1.message.match(/NanoNodeError:/)) {
                             throw error_1;
                         }
                         return [3 /*break*/, 5];
@@ -140,7 +140,7 @@ var NanoNode = /** @class */ (function () {
                         return [3 /*break*/, 6];
                     case 4:
                         error_2 = _a.sent();
-                        if (retries >= max_retries || !error_2.message.match(/^NanoNodeError:/)) {
+                        if (retries >= max_retries || !error_2.message.match(/NanoNodeError:/)) {
                             throw error_2;
                         }
                         return [3 /*break*/, 5];
