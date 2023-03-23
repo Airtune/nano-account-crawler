@@ -166,13 +166,12 @@ var NanoNode = /** @class */ (function () {
                         return [4 /*yield*/, this.jsonRequest(request)];
                     case 2:
                         response = _a.sent();
+                        this.validateIsAccountInfo(account, response);
                         return [3 /*break*/, 4];
                     case 3:
                         error_3 = _a.sent();
                         throw (error_3);
-                    case 4:
-                        this.validateIsAccountInfo(account, response);
-                        return [2 /*return*/, response];
+                    case 4: return [2 /*return*/, response];
                 }
             });
         });

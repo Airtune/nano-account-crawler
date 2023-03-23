@@ -102,11 +102,11 @@ export class NanoNode {
     let response: INanoAccountInfo;
     try {
       response = await this.jsonRequest(request);
+      this.validateIsAccountInfo(account, response);
     } catch(error) {
       throw(error);
     }
-    this.validateIsAccountInfo(account, response);
-
+  
     return response;
   }
 

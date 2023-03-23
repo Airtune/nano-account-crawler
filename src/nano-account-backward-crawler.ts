@@ -34,10 +34,14 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
   }
 
   async initialize() {
-    const historySegmentPromise = this.nanoNode.getBackwardHistory(this.account, this.head, "0", this.accountFilter, this._maxBlocksPerRequest);
-    const accountInfoPromise    = this.nanoNode.getAccountInfo(this.account);
-    this.accountHistory = await historySegmentPromise.catch((error) => { throw(error); });
-    this.accountInfo    = await accountInfoPromise.catch((error) => { throw(error); });
+    try {
+      const historySegmentPromise = this.nanoNode.getBackwardHistory(this.account, this.head, "0", this.accountFilter, this._maxBlocksPerRequest);
+      const accountInfoPromise    = this.nanoNode.getAccountInfo(this.account);
+      this.accountHistory = await historySegmentPromise;
+      this.accountInfo    = await accountInfoPromise;
+    } catch(error) {
+      throw(error);
+    }
 
     this.confirmationHeight = BigInt('' + this.accountInfo.confirmation_height);
   }
