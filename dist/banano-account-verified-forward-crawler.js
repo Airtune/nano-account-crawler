@@ -14,7 +14,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -37,7 +37,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BananoAccountVerifiedForwardCrawler = void 0;
-var bananojs = require("@bananocoin/bananojs");
+var bananojsImport = require("@bananocoin/bananojs");
+var bananojs = bananojsImport;
 // Iterable that makes requests as required when looping through blocks in an account.
 var BananoAccountVerifiedForwardCrawler = /** @class */ (function () {
     function BananoAccountVerifiedForwardCrawler(nanoAccountForwardCrawler, accountToPublicKeyHex) {
@@ -70,7 +71,7 @@ var BananoAccountVerifiedForwardCrawler = /** @class */ (function () {
         var expectedPrevious = undefined;
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
-                var iteratorResult, error_2, block, tempBlock, calculatedHash, hash, hashBytes, workBytes;
+                var iteratorResult, error_2, blockStatusReturn, block, tempBlock, calculatedHash, hash, hashBytes, workBytes;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -83,13 +84,20 @@ var BananoAccountVerifiedForwardCrawler = /** @class */ (function () {
                             error_2 = _a.sent();
                             throw (error_2);
                         case 3:
-                            block = iteratorResult.value;
+                            blockStatusReturn = iteratorResult.value;
+                            if (blockStatusReturn.status === "error") {
+                                return [2 /*return*/, { value: blockStatusReturn, done: true }];
+                            }
+                            block = blockStatusReturn.value;
+                            if (!block) {
+                                return [2 /*return*/, { value: { status: "error", error_type: "MissingBlock", message: "expected block, got nothing" }, done: true }];
+                            }
                             if (iteratorResult.done) {
-                                return [2 /*return*/, { value: undefined, done: true }];
+                                return [2 /*return*/, { value: { status: "ok", data: undefined }, done: true }];
                             }
                             // Verify block has expected value for previous
                             if (typeof expectedPrevious === "string" && block.previous !== expectedPrevious) {
-                                throw Error("InvalidChain: expectedPrevious: ".concat(expectedPrevious, " actual block.previous: ").concat(block.previous, " for block: ").concat(block.hash));
+                                return [2 /*return*/, { value: { status: "error", error_type: "InvalidChain", message: "expectedPrevious: ".concat(expectedPrevious, " actual block.previous: ").concat(block.previous, " for block: ").concat(block.hash) }, done: true }];
                             }
                             tempBlock = {
                                 account: this._nanoAccountForwardCrawler.account,
@@ -100,7 +108,7 @@ var BananoAccountVerifiedForwardCrawler = /** @class */ (function () {
                             };
                             calculatedHash = bananojs.getBlockHash(tempBlock);
                             if (calculatedHash !== block.hash) {
-                                throw Error("InvalidChain: unexpected hash: ".concat(block.hash, " calculated: ").concat(calculatedHash));
+                                return [2 /*return*/, { value: { status: "error", error_type: "InvalidChain", message: "unexpected hash: ".concat(block.hash, " calculated: ").concat(calculatedHash) }, done: true }];
                             }
                             hash = block.previous;
                             if (hash === "0000000000000000000000000000000000000000000000000000000000000000") {
@@ -109,11 +117,11 @@ var BananoAccountVerifiedForwardCrawler = /** @class */ (function () {
                             hashBytes = bananojs.bananoUtil.hexToBytes(hash);
                             workBytes = bananojs.bananoUtil.hexToBytes(block.work).reverse();
                             if (!bananojs.bananoUtil.isWorkValid(hashBytes, workBytes)) {
-                                throw Error("InvalidChain: unable to verify work for: ".concat(hash, " with work: ").concat(block.work));
+                                return [2 /*return*/, { value: { status: "error", error_type: "InvalidChain", message: "unable to verify work for: ".concat(hash, " with work: ").concat(block.work) }, done: true }];
                             }
                             // Verify signature
                             if (!bananojs.verify(block.hash, block.signature, this._publicKeyHex)) {
-                                throw Error("InvalidChain: unable to verify signature for block: ".concat(block.hash));
+                                return [2 /*return*/, { value: { status: "error", error_type: "InvalidChain", message: "unable to verify signature for block: ".concat(block.hash) }, done: true }];
                             }
                             expectedPrevious = block.hash;
                             return [2 /*return*/, iteratorResult];

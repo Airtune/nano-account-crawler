@@ -1,3 +1,5 @@
+import { IStatusReturn } from "./status-return-interfaces";
+
 export type TAccount = `${'ban_' | 'nano_'}${string}`;
 export type TNanoBlockType = "state";
 export type TNanoBlockSubtype = "send" | "receive" | "open" | "change" | "epoch";
@@ -40,5 +42,5 @@ export interface INanoAccountInfo {
   confirmation_height_frontier: TBlockHash
 }
 
-export interface INanoAccountForwardIterable extends AsyncIterable<INanoBlock> {}
-export interface INanoAccountBackwardIterable extends AsyncIterable<INanoBlock> {}
+export interface INanoAccountForwardIterable extends AsyncIterable<IStatusReturn<INanoBlock>> {}
+export interface INanoAccountBackwardIterable extends AsyncIterable<IStatusReturn<INanoBlock>> {}

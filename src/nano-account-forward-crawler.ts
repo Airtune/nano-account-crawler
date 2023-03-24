@@ -8,6 +8,7 @@ import {
   TBlockHash,
   TStringBigInt
 } from './nano-interfaces';
+import { IStatusReturn } from './status-return-interfaces';
 
 // Iterable that makes requests as required when looping through blocks in an account.
 export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
@@ -18,7 +19,7 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
   private _accountFilter: TAccount[];
   private _accountHistory: INanoAccountHistory;
   private _accountInfo: INanoAccountInfo;
-  private _confirmationHeight: BigInt;
+  private _confirmationHeight: bigint;
   private _count: number;
   private _maxBlocksPerRequest: number;
   private _maxRpcIterations: number;
@@ -36,52 +37,98 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
     this._maxRpcIterations = 1000;
   }
 
-  async initialize() {
+  async initialize(): Promise<IStatusReturn<void>> {
     try {
       const historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._maxBlocksPerRequest);
       const accountInfoPromise    = this._nanoNode.getAccountInfo(this._account);
-      this._accountHistory = await historySegmentPromise;
-      this._accountInfo    = await accountInfoPromise;
+      const historySegmentResponse = await historySegmentPromise;
+      const accountInfoResponse = await accountInfoPromise;
+      
+      if (historySegmentResponse.status === "error") {
+        return historySegmentResponse;
+      }
+      
+      if (accountInfoResponse.status === "error") {
+        return accountInfoResponse;
+      }
+  
+      this._accountHistory = historySegmentResponse.value;
+      this._accountInfo    = accountInfoResponse.value;
     } catch(error) {
-      throw(error);
+      return {
+        status: "error",
+        error_type: "UnexpectedError",
+        message: `Unexpected error occurred while initializing: ${error}`
+      };
     }
-
+  
+    if (!this._accountInfo) {
+      return {
+        status: "error",
+        error_type: "MissingAccountInfo",
+        message: "Account info is missing after initialization"
+      };
+    }
+  
     this._confirmationHeight = BigInt('' + this._accountInfo.confirmation_height);
+  
+    return { status: "ok" };
   }
 
-  [Symbol.asyncIterator](): AsyncIterator<INanoBlock> {
+  [Symbol.asyncIterator](): AsyncIterator<IStatusReturn<INanoBlock>> {
     if (this._accountHistory === undefined || this._accountInfo === undefined || this._confirmationHeight <= BigInt('0')) {
-      throw Error('NanoAccountCrawlerError: not initialized. Did you call initialize() before iterating?');
+      return {
+        async next(): Promise<IteratorResult<IStatusReturn<INanoBlock>>> {
+          return {
+            value: {
+              status: "error",
+              error_type: "NanoAccountCrawlerError",
+              message: "not initialized. Did you call initialize() before iterating?",
+            },
+            done: true,
+          };
+        },
+      };
     }
-    
+      
     let rpcIterations = 0;
-
+  
     let history: INanoBlock[] = this._accountHistory.history;
     let historyIndex: number = 0;
     let previous: string = undefined;
     let endReached = false;
-
+  
     const startBlockHeight: (boolean|bigint) = history[historyIndex] && BigInt(history[historyIndex].height);
-
+  
     return {
-      next: async (): Promise<IteratorResult<INanoBlock>> => {
+      next: async (): Promise<IteratorResult<IStatusReturn<INanoBlock>>> => {
         if (endReached || history.length === 0 || historyIndex >= history.length) {
-          return { value: undefined, done: true };
+          return { value: { status: "done", done: true }, done: true };
         }
 
         const block: INanoBlock = history[historyIndex];
         const blockHeight = BigInt('' + block.height);
 
         if (blockHeight <= BigInt('0') || blockHeight > this._confirmationHeight) {
-          return { value: undefined, done: true };
-        }
-
-        if (blockHeight <= BigInt('0') || blockHeight > this._confirmationHeight) {
-          return { value: undefined, done: true };
+          return {
+            value: {
+              status: "error",
+              error_type: "InvalidBlockHeightError",
+              message: `Block height ${blockHeight} is outside valid range (0, ${this._confirmationHeight}]`,
+            },
+            done: true,
+          };
         }
 
         if (typeof this._accountFilter === "undefined" && typeof previous === "string" && block.previous !== previous) {
-          throw Error(`InvalidChain: Expected previous: ${previous} got ${block.previous} for ${block.hash}`);
+          return {
+            value: {
+              status: "error",
+              error_type: "InvalidChainError",
+              message: `Expected previous: ${previous}, got ${block.previous} for ${block.hash}`,
+            },
+            done: true,
+          };
         }
 
         historyIndex += 1;
@@ -93,14 +140,28 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
             // Guard against infinite loops and making too many RPC calls.
             rpcIterations += 1;
             if (rpcIterations > this._maxRpcIterations) {
-              throw Error(`TooManyRpcIterations: Expected to fetch full history from nano node within ${this._maxRpcIterations} requests.`);
+              return {
+                value: {
+                  status: "error",
+                  error_type: "TooManyRpcIterationsError",
+                  message: `Expected to fetch full history from nano node within ${this._maxRpcIterations} requests.`,
+                },
+                done: true,
+              };
             }
             // TODO: Edge case optimization that reduce count on each rpc iteration so last iteration doesn't include bloat blocks for large requests.
             let _accountHistory;
             try {
               _accountHistory = await this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._maxBlocksPerRequest);
             } catch(error) {
-              throw(error);
+              return {
+                value: {
+                  status: "error",
+                  error_type: "RpcError",
+                  message: error.message,
+                },
+                done: true,
+              };
             }
             history = _accountHistory.history;
             historyIndex = 0;
@@ -109,15 +170,23 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
 
         previous = block.hash;
         if (this.exceededCount(startBlockHeight, blockHeight + BigInt(1))) {
-          return { value: undefined, done: true };
+          return {
+            value: {
+              status: "error",
+              error_type: "CountExceededError",
+              message: `Reached maximum count (${this._count}) before reaching confirmation height (${this._confirmationHeight})`,
+            },
+            done: true,
+          };
         } else if (this.reachedCount(startBlockHeight, blockHeight + BigInt(1))) {
           endReached = true;
-          return { value: block, done: false };
+          return { value: { status: "ok", value: block }, done: false };
         } {
-          return { value: block, done: false };
+          return { value: { status: "ok", value: block }, done: false };
         }
       }
     };
+
   }
 
   private exceededCount(startBlockHeight: bigint, blockHeight: bigint): boolean {

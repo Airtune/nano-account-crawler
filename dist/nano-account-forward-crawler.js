@@ -14,7 +14,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -58,28 +58,45 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
     }
     NanoAccountForwardCrawler.prototype.initialize = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var historySegmentPromise, accountInfoPromise, _a, _b, error_1;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var historySegmentPromise, accountInfoPromise, historySegmentResponse, accountInfoResponse, error_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        _c.trys.push([0, 3, , 4]);
+                        _a.trys.push([0, 3, , 4]);
                         historySegmentPromise = this._nanoNode.getForwardHistory(this._account, this._head, this._offset, this._accountFilter, this._maxBlocksPerRequest);
                         accountInfoPromise = this._nanoNode.getAccountInfo(this._account);
-                        _a = this;
                         return [4 /*yield*/, historySegmentPromise];
                     case 1:
-                        _a._accountHistory = _c.sent();
-                        _b = this;
+                        historySegmentResponse = _a.sent();
                         return [4 /*yield*/, accountInfoPromise];
                     case 2:
-                        _b._accountInfo = _c.sent();
+                        accountInfoResponse = _a.sent();
+                        if (historySegmentResponse.status === "error") {
+                            return [2 /*return*/, historySegmentResponse];
+                        }
+                        if (accountInfoResponse.status === "error") {
+                            return [2 /*return*/, accountInfoResponse];
+                        }
+                        this._accountHistory = historySegmentResponse.value;
+                        this._accountInfo = accountInfoResponse.value;
                         return [3 /*break*/, 4];
                     case 3:
-                        error_1 = _c.sent();
-                        throw (error_1);
+                        error_1 = _a.sent();
+                        return [2 /*return*/, {
+                                status: "error",
+                                error_type: "UnexpectedError",
+                                message: "Unexpected error occurred while initializing: ".concat(error_1)
+                            }];
                     case 4:
+                        if (!this._accountInfo) {
+                            return [2 /*return*/, {
+                                    status: "error",
+                                    error_type: "MissingAccountInfo",
+                                    message: "Account info is missing after initialization"
+                                }];
+                        }
                         this._confirmationHeight = BigInt('' + this._accountInfo.confirmation_height);
-                        return [2 /*return*/];
+                        return [2 /*return*/, { status: "ok" }];
                 }
             });
         });
@@ -87,7 +104,22 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
     NanoAccountForwardCrawler.prototype[Symbol.asyncIterator] = function () {
         var _this = this;
         if (this._accountHistory === undefined || this._accountInfo === undefined || this._confirmationHeight <= BigInt('0')) {
-            throw Error('NanoAccountCrawlerError: not initialized. Did you call initialize() before iterating?');
+            return {
+                next: function () {
+                    return __awaiter(this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            return [2 /*return*/, {
+                                    value: {
+                                        status: "error",
+                                        error_type: "NanoAccountCrawlerError",
+                                        message: "not initialized. Did you call initialize() before iterating?",
+                                    },
+                                    done: true,
+                                }];
+                        });
+                    });
+                },
+            };
         }
         var rpcIterations = 0;
         var history = this._accountHistory.history;
@@ -102,18 +134,29 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                     switch (_a.label) {
                         case 0:
                             if (endReached || history.length === 0 || historyIndex >= history.length) {
-                                return [2 /*return*/, { value: undefined, done: true }];
+                                return [2 /*return*/, { value: { status: "done", done: true }, done: true }];
                             }
                             block = history[historyIndex];
                             blockHeight = BigInt('' + block.height);
                             if (blockHeight <= BigInt('0') || blockHeight > this._confirmationHeight) {
-                                return [2 /*return*/, { value: undefined, done: true }];
-                            }
-                            if (blockHeight <= BigInt('0') || blockHeight > this._confirmationHeight) {
-                                return [2 /*return*/, { value: undefined, done: true }];
+                                return [2 /*return*/, {
+                                        value: {
+                                            status: "error",
+                                            error_type: "InvalidBlockHeightError",
+                                            message: "Block height ".concat(blockHeight, " is outside valid range (0, ").concat(this._confirmationHeight, "]"),
+                                        },
+                                        done: true,
+                                    }];
                             }
                             if (typeof this._accountFilter === "undefined" && typeof previous === "string" && block.previous !== previous) {
-                                throw Error("InvalidChain: Expected previous: ".concat(previous, " got ").concat(block.previous, " for ").concat(block.hash));
+                                return [2 /*return*/, {
+                                        value: {
+                                            status: "error",
+                                            error_type: "InvalidChainError",
+                                            message: "Expected previous: ".concat(previous, ", got ").concat(block.previous, " for ").concat(block.hash),
+                                        },
+                                        done: true,
+                                    }];
                             }
                             historyIndex += 1;
                             if (!(historyIndex >= history.length)) return [3 /*break*/, 5];
@@ -121,7 +164,14 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             // Guard against infinite loops and making too many RPC calls.
                             rpcIterations += 1;
                             if (rpcIterations > this._maxRpcIterations) {
-                                throw Error("TooManyRpcIterations: Expected to fetch full history from nano node within ".concat(this._maxRpcIterations, " requests."));
+                                return [2 /*return*/, {
+                                        value: {
+                                            status: "error",
+                                            error_type: "TooManyRpcIterationsError",
+                                            message: "Expected to fetch full history from nano node within ".concat(this._maxRpcIterations, " requests."),
+                                        },
+                                        done: true,
+                                    }];
                             }
                             _accountHistory = void 0;
                             _a.label = 1;
@@ -133,7 +183,14 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             return [3 /*break*/, 4];
                         case 3:
                             error_2 = _a.sent();
-                            throw (error_2);
+                            return [2 /*return*/, {
+                                    value: {
+                                        status: "error",
+                                        error_type: "RpcError",
+                                        message: error_2.message,
+                                    },
+                                    done: true,
+                                }];
                         case 4:
                             history = _accountHistory.history;
                             historyIndex = 0;
@@ -141,14 +198,21 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                         case 5:
                             previous = block.hash;
                             if (this.exceededCount(startBlockHeight, blockHeight + BigInt(1))) {
-                                return [2 /*return*/, { value: undefined, done: true }];
+                                return [2 /*return*/, {
+                                        value: {
+                                            status: "error",
+                                            error_type: "CountExceededError",
+                                            message: "Reached maximum count (".concat(this._count, ") before reaching confirmation height (").concat(this._confirmationHeight, ")"),
+                                        },
+                                        done: true,
+                                    }];
                             }
                             else if (this.reachedCount(startBlockHeight, blockHeight + BigInt(1))) {
                                 endReached = true;
-                                return [2 /*return*/, { value: block, done: false }];
+                                return [2 /*return*/, { value: { status: "ok", value: block }, done: false }];
                             }
                             {
-                                return [2 /*return*/, { value: block, done: false }];
+                                return [2 /*return*/, { value: { status: "ok", value: block }, done: false }];
                             }
                             return [2 /*return*/];
                     }

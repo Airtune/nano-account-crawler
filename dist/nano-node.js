@@ -14,7 +14,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -49,7 +49,7 @@ var NanoNode = /** @class */ (function () {
         if (count === void 0) { count = undefined; }
         if (max_retries === void 0) { max_retries = 3; }
         return __awaiter(this, void 0, void 0, function () {
-            var request, retries, response, error_1;
+            var request, retries, response, errorResponse, responseStatus, isAccountHistoryValid, isAccountValid, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -72,27 +72,62 @@ var NanoNode = /** @class */ (function () {
                         }
                         retries = 0;
                         response = undefined;
+                        errorResponse = undefined;
                         _a.label = 1;
                     case 1:
-                        if (!true) return [3 /*break*/, 6];
+                        if (!(retries < max_retries)) return [3 /*break*/, 8];
                         retries += 1;
                         _a.label = 2;
                     case 2:
-                        _a.trys.push([2, 4, , 5]);
+                        _a.trys.push([2, 6, , 7]);
                         return [4 /*yield*/, this.jsonRequest(request)];
                     case 3:
-                        response = _a.sent();
-                        this.validateIsAccountHistory(account, response);
-                        this.validateAccount(account, response);
-                        return [3 /*break*/, 6];
-                    case 4:
-                        error_1 = _a.sent();
-                        if (retries >= max_retries || !error_1.message.match(/NanoNodeError:/)) {
-                            throw error_1;
+                        responseStatus = _a.sent();
+                        if (responseStatus.status === "error") {
+                            errorResponse = responseStatus;
+                            return [3 /*break*/, 1];
                         }
-                        return [3 /*break*/, 5];
-                    case 5: return [3 /*break*/, 1];
-                    case 6: return [2 /*return*/, response];
+                        response = responseStatus.value;
+                        return [4 /*yield*/, this.validateIsAccountHistory(account, response)];
+                    case 4:
+                        isAccountHistoryValid = _a.sent();
+                        return [4 /*yield*/, this.validateAccount(account, response)];
+                    case 5:
+                        isAccountValid = _a.sent();
+                        if (isAccountHistoryValid.status === "error") {
+                            errorResponse = isAccountHistoryValid;
+                            return [3 /*break*/, 1];
+                        }
+                        if (isAccountValid.status === "error") {
+                            errorResponse = isAccountValid;
+                            return [3 /*break*/, 1];
+                        }
+                        errorResponse = undefined;
+                        return [3 /*break*/, 8];
+                    case 6:
+                        error_1 = _a.sent();
+                        errorResponse = {
+                            status: "error",
+                            error_type: "UnexpectedError",
+                            message: "Unexpected error occurred while getting forward history: ".concat(error_1)
+                        };
+                        return [3 /*break*/, 1];
+                    case 7: return [3 /*break*/, 1];
+                    case 8:
+                        if (!response) {
+                            errorResponse = {
+                                status: "error",
+                                error_type: "MissingNanoNodeResponse",
+                                message: "NanoNode response is missing after getting forward history"
+                            };
+                        }
+                        if (errorResponse) {
+                            return [2 /*return*/, errorResponse];
+                        }
+                        return [2 /*return*/, {
+                                status: "ok",
+                                value: response
+                            }];
                 }
             });
         });
@@ -104,7 +139,7 @@ var NanoNode = /** @class */ (function () {
         if (count === void 0) { count = undefined; }
         if (max_retries === void 0) { max_retries = 3; }
         return __awaiter(this, void 0, void 0, function () {
-            var request, retries, response, error_2;
+            var request, retries, response, errorResponse, responseStatus, isAccountHistoryValid, isAccountValid, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -125,34 +160,69 @@ var NanoNode = /** @class */ (function () {
                         }
                         retries = 0;
                         response = undefined;
+                        errorResponse = undefined;
                         _a.label = 1;
                     case 1:
-                        if (!true) return [3 /*break*/, 6];
+                        if (!(retries < max_retries)) return [3 /*break*/, 8];
                         retries += 1;
                         _a.label = 2;
                     case 2:
-                        _a.trys.push([2, 4, , 5]);
+                        _a.trys.push([2, 6, , 7]);
                         return [4 /*yield*/, this.jsonRequest(request)];
                     case 3:
-                        response = _a.sent();
-                        this.validateIsAccountHistory(account, response);
-                        this.validateAccount(account, response);
-                        return [3 /*break*/, 6];
-                    case 4:
-                        error_2 = _a.sent();
-                        if (retries >= max_retries || !error_2.message.match(/NanoNodeError:/)) {
-                            throw error_2;
+                        responseStatus = _a.sent();
+                        if (responseStatus.status === "error") {
+                            errorResponse = responseStatus;
+                            return [3 /*break*/, 1];
                         }
-                        return [3 /*break*/, 5];
-                    case 5: return [3 /*break*/, 1];
-                    case 6: return [2 /*return*/, response];
+                        response = responseStatus.value;
+                        return [4 /*yield*/, this.validateIsAccountHistory(account, response)];
+                    case 4:
+                        isAccountHistoryValid = _a.sent();
+                        return [4 /*yield*/, this.validateAccount(account, response)];
+                    case 5:
+                        isAccountValid = _a.sent();
+                        if (isAccountHistoryValid.status === "error") {
+                            errorResponse = isAccountHistoryValid;
+                            return [3 /*break*/, 1];
+                        }
+                        if (isAccountValid.status === "error") {
+                            errorResponse = isAccountValid;
+                            return [3 /*break*/, 1];
+                        }
+                        errorResponse = undefined;
+                        return [3 /*break*/, 8];
+                    case 6:
+                        error_2 = _a.sent();
+                        errorResponse = {
+                            status: "error",
+                            error_type: "UnexpectedError",
+                            message: "Unexpected error occurred while getting backward history: ".concat(error_2)
+                        };
+                        return [3 /*break*/, 1];
+                    case 7: return [3 /*break*/, 1];
+                    case 8:
+                        if (!response) {
+                            errorResponse = {
+                                status: "error",
+                                error_type: "MissingNanoNodeResponse",
+                                message: "NanoNode response is missing after getting backward history"
+                            };
+                        }
+                        if (errorResponse) {
+                            return [2 /*return*/, errorResponse];
+                        }
+                        return [2 /*return*/, {
+                                status: "ok",
+                                value: response
+                            }];
                 }
             });
         });
     };
     NanoNode.prototype.getAccountInfo = function (account) {
         return __awaiter(this, void 0, void 0, function () {
-            var request, response, error_3;
+            var request, response, responseStatus, isAccountValid, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -162,16 +232,40 @@ var NanoNode = /** @class */ (function () {
                         };
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _a.trys.push([1, 4, , 5]);
                         return [4 /*yield*/, this.jsonRequest(request)];
                     case 2:
-                        response = _a.sent();
-                        this.validateIsAccountInfo(account, response);
-                        return [3 /*break*/, 4];
+                        responseStatus = _a.sent();
+                        if (responseStatus.status === "error") {
+                            return [2 /*return*/, responseStatus];
+                        }
+                        response = responseStatus.value;
+                        return [4 /*yield*/, this.validateIsAccountInfo(account, response)];
                     case 3:
+                        isAccountValid = _a.sent();
+                        if (isAccountValid.status === "error") {
+                            return [2 /*return*/, isAccountValid];
+                        }
+                        return [3 /*break*/, 5];
+                    case 4:
                         error_3 = _a.sent();
-                        throw (error_3);
-                    case 4: return [2 /*return*/, response];
+                        return [2 /*return*/, {
+                                status: "error",
+                                error_type: "UnexpectedError",
+                                message: "Unexpected error occurred while getting account info: ".concat(error_3)
+                            }];
+                    case 5:
+                        if (!response) {
+                            return [2 /*return*/, {
+                                    status: "error",
+                                    error_type: "MissingNanoNodeResponse",
+                                    message: "NanoNode response is missing after getting account info"
+                                }];
+                        }
+                        return [2 /*return*/, {
+                                status: "ok",
+                                value: response
+                            }];
                 }
             });
         });
@@ -184,7 +278,7 @@ var NanoNode = /** @class */ (function () {
     };
     NanoNode.prototype.jsonRequest = function (jsonRequest) {
         return __awaiter(this, void 0, void 0, function () {
-            var request, response, jsonResponse;
+            var request, response, jsonResponse, error_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -194,15 +288,47 @@ var NanoNode = /** @class */ (function () {
                             headers: {
                                 'content-type': 'application/json'
                             },
-                            body: JSON.stringify(jsonRequest)
+                            body: undefined
                         };
-                        return [4 /*yield*/, this.fetch(this.nodeApiUrl, request).catch(function (error) { throw (error); })];
+                        try {
+                            request.body = JSON.stringify(jsonRequest);
+                        }
+                        catch (error) {
+                            return [2 /*return*/, {
+                                    status: "error",
+                                    error_type: "JsonStringifyError",
+                                    message: "Error occurred while converting JSON request to string: ".concat(error)
+                                }];
+                        }
+                        _a.label = 1;
                     case 1:
-                        response = _a.sent();
-                        return [4 /*yield*/, response.json().catch(function (error) { throw (error); })];
+                        _a.trys.push([1, 4, , 5]);
+                        return [4 /*yield*/, this.fetch(this.nodeApiUrl, request)];
                     case 2:
+                        response = _a.sent();
+                        return [4 /*yield*/, response.json()];
+                    case 3:
                         jsonResponse = _a.sent();
-                        return [2 /*return*/, jsonResponse];
+                        return [3 /*break*/, 5];
+                    case 4:
+                        error_4 = _a.sent();
+                        return [2 /*return*/, {
+                                status: "error",
+                                error_type: "UnexpectedError",
+                                message: "Unexpected error occurred while making JSON request: ".concat(error_4)
+                            }];
+                    case 5:
+                        if (!jsonResponse) {
+                            return [2 /*return*/, {
+                                    status: "error",
+                                    error_type: "MissingJsonResponse",
+                                    message: "JSON response is missing after making JSON request"
+                                }];
+                        }
+                        return [2 /*return*/, {
+                                status: "ok",
+                                value: jsonResponse
+                            }];
                 }
             });
         });
@@ -212,38 +338,77 @@ var NanoNode = /** @class */ (function () {
     /////////////
     NanoNode.prototype.validateIsAccountHistory = function (account, accountHistory) {
         if (typeof (accountHistory) !== 'object') {
-            throw Error("UnexpectedNanoNodeResponse: Unexpected accountHistory. Expected type to be 'object', got: ".concat(typeof (accountHistory), " for ").concat(account));
+            return {
+                status: "error",
+                error_type: "UnexpectedNanoNodeResponse",
+                message: "Unexpected accountHistory. Expected type to be 'object', got: ".concat(typeof (accountHistory), " for ").concat(account)
+            };
         }
         if (accountHistory.hasOwnProperty('error')) {
-            throw Error("NanoNodeError: ".concat(accountHistory.error, " for ").concat(account));
+            return {
+                status: "error",
+                error_type: "NanoNodeError",
+                message: "".concat(accountHistory.error, " for ").concat(account)
+            };
         }
         if (typeof (accountHistory.account) !== 'string') {
-            throw Error("UnexpectedNanoNodeResponse: Unexpected accountHistory.account. Expected type to be 'string', got: ".concat(typeof (accountHistory.account), " for ").concat(account));
+            return {
+                status: "error",
+                error_type: "UnexpectedNanoNodeResponse",
+                message: "Unexpected accountHistory.account. Expected type to be 'string', got: ".concat(typeof (accountHistory.account), " for ").concat(account)
+            };
         }
         if (!accountHistory.hasOwnProperty('history')) {
-            throw Error("UnexpectedNanoNodeResponse: accountHistory doesn't have property 'history' for ".concat(account));
+            return {
+                status: "error",
+                error_type: "UnexpectedNanoNodeResponse",
+                message: "accountHistory doesn't have property 'history' for ".concat(account)
+            };
         }
         var _prototype = Object.prototype.toString.call(accountHistory.history);
         if (!(_prototype === '[object String]' || _prototype === '[object Array]')) {
-            throw Error("UnexpectedNanoNodeResponse: accountHistory.history not of type array or string. Got: ".concat(_prototype, " for ").concat(account));
+            return {
+                status: "error",
+                error_type: "UnexpectedNanoNodeResponse",
+                message: "accountHistory.history not of type array or string. Got: ".concat(_prototype, " for ").concat(account)
+            };
         }
+        return { status: "ok" };
     };
     NanoNode.prototype.validateIsAccountInfo = function (account, accountInfo) {
         if (typeof (accountInfo) !== 'object') {
-            throw Error("UnexpectedNanoNodeResponse: Unexpected accountInfo. Expected type to be 'object', got: '".concat(typeof (accountInfo), "' for ").concat(account));
+            return {
+                status: "error",
+                error_type: "UnexpectedNanoNodeResponse",
+                message: "Unexpected accountInfo. Expected type to be 'object', got: '".concat(typeof (accountInfo), "' for ").concat(account)
+            };
         }
         if (accountInfo.hasOwnProperty('error')) {
-            throw Error("NanoNodeError: ".concat(accountInfo.error, " for ").concat(account));
+            return {
+                status: "error",
+                error_type: "NanoNodeError",
+                message: "".concat(accountInfo.error, " for ").concat(account)
+            };
         }
         if (typeof (accountInfo['confirmation_height']) !== 'string') {
-            throw Error("UnexpectedNanoNodeResponse: Unexpected accountInfo['confirmation_height']. Expected type to be 'string', got: ".concat(typeof (accountInfo['confirmation_height']), " for ").concat(account));
+            return {
+                status: "error",
+                error_type: "UnexpectedNanoNodeResponse",
+                message: "Unexpected accountInfo['confirmation_height']. Expected type to be 'string', got: ".concat(typeof (accountInfo['confirmation_height']), " for ").concat(account)
+            };
         }
+        return { status: "ok" };
     };
     NanoNode.prototype.validateAccount = function (account, accountHistory) {
         // Warning: Nano node returns history for templatePrevious block ignoring if there's an issuer account mismatch.
         if (account !== accountHistory['account']) {
-            throw Error("AccountMismatch: requested info for account '".concat(account, "' but head was for account '").concat(accountHistory['account'], "'"));
+            return {
+                status: "error",
+                error_type: "AccountMismatch",
+                message: "requested info for account '".concat(account, "' but head was for account '").concat(accountHistory['account'], "'")
+            };
         }
+        return { status: "ok" };
     };
     ;
     NanoNode.prototype.historyFrontierIsBehind = function (history, confirmationHeight) {

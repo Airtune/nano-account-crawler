@@ -5,6 +5,7 @@ import {
   TStringBigInt,
   TBlockHash
 } from './nano-interfaces';
+import { IErrorReturn, IStatusReturn } from './status-return-interfaces';
 
 export class NanoNode {
   private nodeApiUrl: string;
@@ -15,7 +16,7 @@ export class NanoNode {
     this.fetch = fetch;
   }
 
-  async getForwardHistory(account: TAccount, head: TBlockHash = undefined, offset: TStringBigInt = "0", account_filter: TAccount[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
+  async getForwardHistory(account: TAccount, head: TBlockHash = undefined, offset: TStringBigInt = "0", account_filter: TAccount[] = undefined, count: number = undefined, max_retries: number = 3): Promise<IStatusReturn<INanoAccountHistory>> {
     const request: any = {
       action: 'account_history',
       account: account,
@@ -33,29 +34,63 @@ export class NanoNode {
     if (count) {
       request.count = count;
     }
-
+  
     let retries: number = 0;
     let response: INanoAccountHistory = undefined;
-
-    while (true) {
+    let errorResponse: IErrorReturn = undefined;
+  
+    while (retries < max_retries) {
       retries += 1;
-
+  
       try {
-        response = await this.jsonRequest(request);
-        this.validateIsAccountHistory(account, response);
-        this.validateAccount(account, response);
+        const responseStatus: IStatusReturn<any> = await this.jsonRequest(request);
+        if (responseStatus.status === "error") {
+          errorResponse = responseStatus;
+          continue;
+        }
+        response = responseStatus.value;
+        const isAccountHistoryValid: IStatusReturn<void> = await this.validateIsAccountHistory(account, response);
+        const isAccountValid: IStatusReturn<void> = await this.validateAccount(account, response);
+        if (isAccountHistoryValid.status === "error") {
+          errorResponse = isAccountHistoryValid;
+          continue;
+        }
+        if (isAccountValid.status === "error") {
+          errorResponse = isAccountValid;
+          continue;
+        }
+        errorResponse = undefined;
         break;
       } catch (error) {
-        if (retries >= max_retries || !error.message.match(/NanoNodeError:/)) {
-          throw error;
-        }
+        errorResponse = {
+          status: "error",
+          error_type: "UnexpectedError",
+          message: `Unexpected error occurred while getting forward history: ${error}`
+        };
+        continue;
       }
     } 
-
-    return response;
+  
+    if (!response) {
+      errorResponse = {
+        status: "error",
+        error_type: "MissingNanoNodeResponse",
+        message: "NanoNode response is missing after getting forward history"
+      };
+    }
+  
+    if (errorResponse) {
+      return errorResponse;
+    }
+  
+    return {
+      status: "ok",
+      value: response
+    };
   }
+  
 
-  async getBackwardHistory(account: TAccount, head: TBlockHash = undefined, offset: TStringBigInt = "0", account_filter: TAccount[] = undefined, count: number = undefined, max_retries: number = 3): Promise<INanoAccountHistory> {
+  async getBackwardHistory(account: TAccount, head: TBlockHash = undefined, offset: TStringBigInt = "0", account_filter: TAccount[] = undefined, count: number = undefined, max_retries: number = 3): Promise<IStatusReturn<INanoAccountHistory>> {
     const request: any = {
       action: 'account_history',
       account: account,
@@ -71,46 +106,103 @@ export class NanoNode {
     if (count) {
       request.count = count;
     }
-
+  
     let retries: number = 0;
     let response: INanoAccountHistory = undefined;
-
-    while (true) {
+    let errorResponse: IErrorReturn = undefined;
+  
+    while (retries < max_retries) {
       retries += 1;
-
+  
       try {
-        response = await this.jsonRequest(request);
-        this.validateIsAccountHistory(account, response);
-        this.validateAccount(account, response);
+        const responseStatus: IStatusReturn<any> = await this.jsonRequest(request);
+        if (responseStatus.status === "error") {
+          errorResponse = responseStatus;
+          continue;
+        }
+        response = responseStatus.value;
+        const isAccountHistoryValid = await this.validateIsAccountHistory(account, response);
+        const isAccountValid = await this.validateAccount(account, response);
+        if (isAccountHistoryValid.status === "error") {
+          errorResponse = isAccountHistoryValid;
+          continue;
+        }
+        if (isAccountValid.status === "error") {
+          errorResponse = isAccountValid;
+          continue;
+        }
+        errorResponse = undefined;
         break;
       } catch (error) {
-        if (retries >= max_retries || !error.message.match(/NanoNodeError:/)) {
-          throw error;
-        }
+        errorResponse = {
+          status: "error",
+          error_type: "UnexpectedError",
+          message: `Unexpected error occurred while getting backward history: ${error}`
+        };
+        continue;
       }
     } 
-    
-    return response;
+  
+    if (!response) {
+      errorResponse = {
+        status: "error",
+        error_type: "MissingNanoNodeResponse",
+        message: "NanoNode response is missing after getting backward history"
+      };
+    }
+  
+    if (errorResponse) {
+      return errorResponse;
+    }
+  
+    return {
+      status: "ok",
+      value: response
+    };
   }
+  
 
-  async getAccountInfo(account: TAccount): Promise<INanoAccountInfo> {
+  async getAccountInfo(account: TAccount): Promise<IStatusReturn<INanoAccountInfo>> {
     const request = {
       action: 'account_info',
       account: account
     };
-
+  
     let response: INanoAccountInfo;
     try {
-      response = await this.jsonRequest(request);
-      this.validateIsAccountInfo(account, response);
-    } catch(error) {
-      throw(error);
+      const responseStatus: IStatusReturn<any> = await this.jsonRequest(request);
+        if (responseStatus.status === "error") {
+          return responseStatus;
+        }
+        response = responseStatus.value;
+      const isAccountValid = await this.validateIsAccountInfo(account, response);
+      if (isAccountValid.status === "error") {
+        return isAccountValid;
+      }
+    } catch (error) {
+      return {
+        status: "error",
+        error_type: "UnexpectedError",
+        message: `Unexpected error occurred while getting account info: ${error}`
+      };
     }
   
-    return response;
+    if (!response) {
+      return {
+        status: "error",
+        error_type: "MissingNanoNodeResponse",
+        message: "NanoNode response is missing after getting account info"
+      };
+    }
+  
+    return {
+      status: "ok",
+      value: response
+    };
   }
+  
 
-  hasMoreHistory(history: any, confirmationHeight: BigInt): boolean {
+  hasMoreHistory(history: any, confirmationHeight: bigint): boolean {
     return !this.historyIsEmpty(history) && this.historyFrontierIsBehind(history, confirmationHeight);
   }
 
@@ -118,73 +210,147 @@ export class NanoNode {
     return history.length === 0 || history.length === undefined;
   }
 
-  async jsonRequest(jsonRequest: any): Promise<any> {
+  async jsonRequest(jsonRequest: any): Promise<IStatusReturn<any>> {
     const request = {
       method: 'POST',
       mode: 'cors',
       headers: {
         'content-type': 'application/json'
       },
-      body: JSON.stringify(jsonRequest)
+      body: undefined
     };
-
+  
     let response, jsonResponse;
-    response = await this.fetch(this.nodeApiUrl, request).catch((error) => { throw(error); });
-    jsonResponse = await response.json().catch((error) => { throw(error); });
-    return jsonResponse;
+    try {
+      request.body = JSON.stringify(jsonRequest);
+    } catch (error) {
+      return {
+        status: "error",
+        error_type: "JsonStringifyError",
+        message: `Error occurred while converting JSON request to string: ${error}`
+      };
+    }
+  
+    try {
+      response = await this.fetch(this.nodeApiUrl, request);
+      jsonResponse = await response.json();
+    } catch (error) {
+      return {
+        status: "error",
+        error_type: "UnexpectedError",
+        message: `Unexpected error occurred while making JSON request: ${error}`
+      };
+    }
+  
+    if (!jsonResponse) {
+      return {
+        status: "error",
+        error_type: "MissingJsonResponse",
+        message: "JSON response is missing after making JSON request"
+      };
+    }
+  
+    return {
+      status: "ok",
+      value: jsonResponse
+    };
   }
+  
 
   /////////////
   // private //
   /////////////
 
-  private validateIsAccountHistory(account: TAccount, accountHistory: INanoAccountHistory) {
+  private validateIsAccountHistory(account: TAccount, accountHistory: INanoAccountHistory): IStatusReturn<void> {
     if (typeof(accountHistory) !== 'object') {
-      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountHistory. Expected type to be 'object', got: ${typeof(accountHistory)} for ${account}`);
+      return {
+        status: "error",
+        error_type: "UnexpectedNanoNodeResponse",
+        message: `Unexpected accountHistory. Expected type to be 'object', got: ${typeof(accountHistory)} for ${account}`
+      };
     }
-
+  
     if (accountHistory.hasOwnProperty('error')) {
-      throw Error(`NanoNodeError: ${accountHistory.error} for ${account}`);
+      return {
+        status: "error",
+        error_type: "NanoNodeError",
+        message: `${accountHistory.error} for ${account}`
+      };
     }
-
+  
     if (typeof(accountHistory.account) !== 'string') {
-      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountHistory.account. Expected type to be 'string', got: ${typeof(accountHistory.account)} for ${account}`);
+      return {
+        status: "error",
+        error_type: "UnexpectedNanoNodeResponse",
+        message: `Unexpected accountHistory.account. Expected type to be 'string', got: ${typeof(accountHistory.account)} for ${account}`
+      };
     }
-
+  
     if (!accountHistory.hasOwnProperty('history')) {
-      throw Error(`UnexpectedNanoNodeResponse: accountHistory doesn't have property 'history' for ${account}`);
+      return {
+        status: "error",
+        error_type: "UnexpectedNanoNodeResponse",
+        message: `accountHistory doesn't have property 'history' for ${account}`
+      };
     }
-
+  
     const _prototype: string = Object.prototype.toString.call(accountHistory.history);
     if (!(_prototype === '[object String]' || _prototype === '[object Array]')) {
-      throw Error(`UnexpectedNanoNodeResponse: accountHistory.history not of type array or string. Got: ${_prototype} for ${account}`);
+      return {
+        status: "error",
+        error_type: "UnexpectedNanoNodeResponse",
+        message: `accountHistory.history not of type array or string. Got: ${_prototype} for ${account}`
+      };
     }
+  
+    return { status: "ok" };
   }
+  
 
-  private validateIsAccountInfo(account: TAccount, accountInfo: INanoAccountInfo) {
+  private validateIsAccountInfo(account: TAccount, accountInfo: INanoAccountInfo): IStatusReturn<void> {
     if (typeof(accountInfo) !== 'object') {
-      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountInfo. Expected type to be 'object', got: '${typeof(accountInfo)}' for ${account}`);
+      return {
+        status: "error",
+        error_type: "UnexpectedNanoNodeResponse",
+        message: `Unexpected accountInfo. Expected type to be 'object', got: '${typeof(accountInfo)}' for ${account}`
+      };
     }
 
     if (accountInfo.hasOwnProperty('error')) {
-      throw Error(`NanoNodeError: ${accountInfo.error} for ${account}`);
+      return {
+        status: "error",
+        error_type: "NanoNodeError",
+        message: `${accountInfo.error} for ${account}`
+      };
     }
 
     if (typeof(accountInfo['confirmation_height']) !== 'string') {
-      throw Error(`UnexpectedNanoNodeResponse: Unexpected accountInfo['confirmation_height']. Expected type to be 'string', got: ${typeof(accountInfo['confirmation_height'])} for ${account}`);
+      return {
+        status: "error",
+        error_type: "UnexpectedNanoNodeResponse",
+        message: `Unexpected accountInfo['confirmation_height']. Expected type to be 'string', got: ${typeof(accountInfo['confirmation_height'])} for ${account}`
+      };
     }
+
+    return { status: "ok" };
   }
 
-  private validateAccount(account: string, accountHistory) {
+  private validateAccount(account: string, accountHistory): IStatusReturn<void> {
     // Warning: Nano node returns history for templatePrevious block ignoring if there's an issuer account mismatch.
     if (account !== accountHistory['account']) {
-      throw Error(`AccountMismatch: requested info for account '${account}' but head was for account '${accountHistory['account']}'`);
+      return {
+        status: "error",
+        error_type: "AccountMismatch",
+        message: `requested info for account '${account}' but head was for account '${accountHistory['account']}'`
+      };
     }
+
+    return { status: "ok" };
   };
 
-  private historyFrontierIsBehind(history: any, confirmationHeight: BigInt): boolean {
+  private historyFrontierIsBehind(history: any, confirmationHeight: bigint): boolean {
     const historyLastBlock = history[history.length - 1];
-    const historyHeight: BigInt = BigInt('' + historyLastBlock['height']);
+    const historyHeight: bigint = BigInt('' + historyLastBlock['height']);
 
     return historyHeight > BigInt('0') && historyHeight < confirmationHeight
   }

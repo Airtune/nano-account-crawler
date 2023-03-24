@@ -1,10 +1,11 @@
-export declare type TAccount = `${'ban_' | 'nano_'}${string}`;
-export declare type TNanoBlockType = "state";
-export declare type TNanoBlockSubtype = "send" | "receive" | "open" | "change" | "epoch";
-export declare type TStringBigInt = `${number}`;
-export declare type TBlockHeight = `${number}`;
-export declare type TBlockHash = string;
-export declare type TPublicKey = string;
+import { IStatusReturn } from "./status-return-interfaces";
+export type TAccount = `${'ban_' | 'nano_'}${string}`;
+export type TNanoBlockType = "state";
+export type TNanoBlockSubtype = "send" | "receive" | "open" | "change" | "epoch";
+export type TStringBigInt = `${number}`;
+export type TBlockHeight = `${number}`;
+export type TBlockHash = string;
+export type TPublicKey = string;
 export interface INanoBlock {
     type: TNanoBlockType;
     subtype: TNanoBlockSubtype;
@@ -36,7 +37,7 @@ export interface INanoAccountInfo {
     confirmation_height: TStringBigInt;
     confirmation_height_frontier: TBlockHash;
 }
-export interface INanoAccountForwardIterable extends AsyncIterable<INanoBlock> {
+export interface INanoAccountForwardIterable extends AsyncIterable<IStatusReturn<INanoBlock>> {
 }
-export interface INanoAccountBackwardIterable extends AsyncIterable<INanoBlock> {
+export interface INanoAccountBackwardIterable extends AsyncIterable<IStatusReturn<INanoBlock>> {
 }

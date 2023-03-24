@@ -1,4 +1,6 @@
-import * as bananojs from '@bananocoin/bananojs';
+import * as bananojsImport from '@bananocoin/bananojs';
+const bananojs = bananojsImport as any;
+
 import { expect } from 'chai';
 import * as fetch from 'node-fetch';
 import { NanoNode } from '../src/nano-node';
@@ -18,7 +20,14 @@ describe('NanoAccountForwardCrawler using Banano Honey API', function() {
       await banCrawler.initialize();
 
       let expectedPrevious = previous;
-      for await (const block of banCrawler) {
+      for await (const blockStatusReturn of banCrawler) {
+        if (blockStatusReturn.status === "error") {
+          throw `Got error of type ${blockStatusReturn.error_type} with message: ${blockStatusReturn.message}`;
+        }
+        const block = blockStatusReturn.value;
+        if (!block) {
+          throw `Unexpected blank block for blockStatusReturn`;
+        }
         expect(block.previous).to.equal(expectedPrevious);
         expectedPrevious = block.hash;
       }
@@ -55,7 +64,14 @@ describe('NanoAccountForwardCrawler using Banano Honey API', function() {
       await banCrawler.initialize();
 
       blockCount = 0;
-      for await (const block of banCrawler) {
+      for await (const blockStatusReturn of banCrawler) {
+        if (blockStatusReturn.status === "error") {
+          throw `Got error of type ${blockStatusReturn.error_type} with message: ${blockStatusReturn.message}`;
+        }
+        const block = blockStatusReturn.value;
+        if (!block) {
+          throw `Unexpected blank block for blockStatusReturn`;
+        }
         blockCount += 1;
       }
     } catch(error) {
@@ -75,7 +91,14 @@ async function countTest(expectedCount) {
 
       expectedPrevious = previous;
       count = 0;
-      for await (const block of banCrawler) {
+      for await (const blockStatusReturn of banCrawler) {
+        if (blockStatusReturn.status === "error") {
+          throw `Got error of type ${blockStatusReturn.error_type} with message: ${blockStatusReturn.message}`;
+        }
+        const block = blockStatusReturn.value;
+        if (!block) {
+          throw `Unexpected blank block for blockStatusReturn`;
+        }
         count = count + 1;
         expect(block.previous).to.equal(expectedPrevious);
         expectedPrevious = block.hash;

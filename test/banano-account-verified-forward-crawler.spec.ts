@@ -1,4 +1,6 @@
-import * as bananojs from '@bananocoin/bananojs';
+import * as bananojsImport from '@bananocoin/bananojs';
+const bananojs = bananojsImport as any;
+
 import { expect } from 'chai';
 import * as fetch from 'node-fetch';
 import { NanoNode } from '../src/nano-node';
@@ -15,35 +17,57 @@ describe('BananoAccountVerifiedForwardCrawler using Banano Honey API', function(
   it('has a valid chain using for await iterator on BananoAccountVerifiedForwardCrawler', async () => {
     const _banCrawler = new NanoAccountForwardCrawler(bananode, account, previous, '1', undefined, 100);
     const banCrawler = new BananoAccountVerifiedForwardCrawler(_banCrawler, bananojs.getAccountPublicKey);
-    await banCrawler.initialize();
+    await banCrawler.initialize().catch((error) => { throw(error); });
 
     let expectedPrevious = previous;
-    for await (const block of banCrawler) {
-      expect(block.previous).to.equal(expectedPrevious);
-      expectedPrevious = block.hash;
+    try {
+      for await (const blockStatusReturn of banCrawler) {
+        if (blockStatusReturn.status === "error") {
+          throw `Got error of type ${blockStatusReturn.error_type} with message: ${blockStatusReturn.message}`;
+        }
+        const block = blockStatusReturn.value;
+        if (!block) {
+          throw `Unexpected blank block for blockStatusReturn`;
+        }
+        expect(block.previous).to.equal(expectedPrevious);
+        expectedPrevious = block.hash;
+      }
+    } catch(error) {
+      throw(error);
     }
   });
 
   it('works with a 1 block count limit on BananoAccountVerifiedForwardCrawler', async () => {
-    await countTest(1);
+    await countTest(1).catch((error) => { throw(error); });
   });
 
   it('works with a 3 block count limit on BananoAccountVerifiedForwardCrawler', async () => {
-    await countTest(3);
+    await countTest(3).catch((error) => { throw(error); });
   });
 });
 
 async function countTest(expectedCount) {
   const _banCrawler = new NanoAccountForwardCrawler(bananode, account, previous, '1', undefined, expectedCount);
   const banCrawler = new BananoAccountVerifiedForwardCrawler(_banCrawler, bananojs.getAccountPublicKey);
-  await banCrawler.initialize();
+  await banCrawler.initialize().catch((error) => { throw(error); });
 
   let expectedPrevious = previous;
   let count = 0;
-  for await (const block of banCrawler) {
-    count = count + 1;
-    expect(block.previous).to.equal(expectedPrevious);
-    expectedPrevious = block.hash;
+  try {
+    for await (const blockStatusReturn of banCrawler) {
+      if (blockStatusReturn.status === "error") {
+        throw `Got error of type ${blockStatusReturn.error_type} with message: ${blockStatusReturn.message}`;
+      }
+      const block = blockStatusReturn.value;
+      if (!block) {
+        throw `Unexpected blank block for blockStatusReturn`;
+      }
+      count = count + 1;
+      expect(block.previous).to.equal(expectedPrevious);
+      expectedPrevious = block.hash;
+    }
+  } catch(error) {
+    throw(error);
   }
   expect(count).to.equal(expectedCount);
 }

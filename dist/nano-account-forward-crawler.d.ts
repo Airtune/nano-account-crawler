@@ -1,5 +1,6 @@
 import { NanoNode } from './nano-node';
 import { INanoAccountForwardIterable, INanoBlock, TAccount, TBlockHash, TStringBigInt } from './nano-interfaces';
+import { IStatusReturn } from './status-return-interfaces';
 export declare class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
     private _nanoNode;
     private _account;
@@ -13,8 +14,8 @@ export declare class NanoAccountForwardCrawler implements INanoAccountForwardIte
     private _maxBlocksPerRequest;
     private _maxRpcIterations;
     constructor(nanoNode: NanoNode, account: TAccount, head?: TBlockHash, offset?: TStringBigInt, accountFilter?: TAccount[], count?: number, maxBlocksPerRequest?: number);
-    initialize(): Promise<void>;
-    [Symbol.asyncIterator](): AsyncIterator<INanoBlock>;
+    initialize(): Promise<IStatusReturn<void>>;
+    [Symbol.asyncIterator](): AsyncIterator<IStatusReturn<INanoBlock>>;
     private exceededCount;
     private reachedCount;
     get account(): string;

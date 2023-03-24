@@ -1,4 +1,5 @@
-import * as bananojs from '@bananocoin/bananojs';
+import * as bananojsImport from '@bananocoin/bananojs';
+const bananojs = bananojsImport as any;
 
 import {
   INanoAccountForwardIterable,
@@ -6,6 +7,7 @@ import {
 } from './nano-interfaces';
 
 import { NanoAccountForwardCrawler } from './nano-account-forward-crawler';
+import { IStatusReturn } from './status-return-interfaces';
 
 
 // Iterable that makes requests as required when looping through blocks in an account.
@@ -27,31 +29,39 @@ export class BananoAccountVerifiedForwardCrawler implements INanoAccountForwardI
     }
   }
 
-  [Symbol.asyncIterator](): AsyncIterator<INanoBlock> {
-    const nanoAccountForwardIterator: AsyncIterator<INanoBlock> = this._nanoAccountForwardCrawler[Symbol.asyncIterator]();
-    
+  [Symbol.asyncIterator](): AsyncIterator<IStatusReturn<INanoBlock>> {
+    const nanoAccountForwardIterator: AsyncIterator<IStatusReturn<INanoBlock>> = this._nanoAccountForwardCrawler[Symbol.asyncIterator]();
+
     let expectedPrevious: string = undefined;
 
     return {
-      next: async () => {
-        let iteratorResult: IteratorResult<INanoBlock>;
+      next: async (): Promise<IteratorResult<IStatusReturn<INanoBlock>>> => {
+        let iteratorResult: IteratorResult<IStatusReturn<INanoBlock>>;
         try {
           iteratorResult = await nanoAccountForwardIterator.next();
         } catch(error) {
           throw(error);
         }
 
-        const block: INanoBlock = iteratorResult.value;
-
-        if (iteratorResult.done) {
-          return { value: undefined, done: true };
-        }
-  
-        // Verify block has expected value for previous
-        if (typeof expectedPrevious === "string" && block.previous !== expectedPrevious) {
-          throw Error(`InvalidChain: expectedPrevious: ${expectedPrevious} actual block.previous: ${block.previous} for block: ${block.hash}`);
+        const blockStatusReturn: IStatusReturn<INanoBlock> = iteratorResult.value;
+        if (blockStatusReturn.status === "error") {
+          return { value: blockStatusReturn, done: true };
         }
         
+        const block = blockStatusReturn.value;
+        if (!block) {
+          return { value: { status: "error", error_type: "MissingBlock", message: `expected block, got nothing` }, done: true };
+        }
+
+        if (iteratorResult.done) {
+          return { value: { status: "ok", data: undefined }, done: true };
+        }
+
+        // Verify block has expected value for previous
+        if (typeof expectedPrevious === "string" && block.previous !== expectedPrevious) {
+          return { value: { status: "error", error_type: "InvalidChain", message: `expectedPrevious: ${expectedPrevious} actual block.previous: ${block.previous} for block: ${block.hash}` }, done: true };
+        }
+
         // Verify block hash
         const tempBlock = {
           account: this._nanoAccountForwardCrawler.account,
@@ -62,7 +72,7 @@ export class BananoAccountVerifiedForwardCrawler implements INanoAccountForwardI
         }
         const calculatedHash = bananojs.getBlockHash(tempBlock);
         if (calculatedHash !== block.hash) {
-          throw Error(`InvalidChain: unexpected hash: ${block.hash} calculated: ${calculatedHash}`);
+          return { value: { status: "error", error_type: "InvalidChain", message: `unexpected hash: ${block.hash} calculated: ${calculatedHash}` }, done: true };
         }
 
         // Validate work
@@ -73,18 +83,19 @@ export class BananoAccountVerifiedForwardCrawler implements INanoAccountForwardI
         const hashBytes = bananojs.bananoUtil.hexToBytes(hash);
         const workBytes = bananojs.bananoUtil.hexToBytes(block.work).reverse();
         if (!bananojs.bananoUtil.isWorkValid(hashBytes, workBytes)) {
-          throw Error(`InvalidChain: unable to verify work for: ${hash} with work: ${block.work}`);
+          return { value: { status: "error", error_type: "InvalidChain", message: `unable to verify work for: ${hash} with work: ${block.work}` }, done: true };
         }
-  
+
         // Verify signature
         if (!bananojs.verify(block.hash, block.signature, this._publicKeyHex)) {
-          throw Error(`InvalidChain: unable to verify signature for block: ${block.hash}`);
+          return { value: { status: "error", error_type: "InvalidChain", message: `unable to verify signature for block: ${block.hash}` }, done: true };
         }
-  
+
         expectedPrevious = block.hash;
-  
+
         return iteratorResult;
       }
     };
   }
+
 }
