@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as fetch from 'node-fetch';
 import { NanoNode } from '../src/nano-node';
 import { NanoAccountBackwardCrawler } from '../src/nano-account-backward-crawler';
-import { TAccount, TBlockHash } from '../src/nano-interfaces';
+import { INanoBlock, TAccount, TBlockHash } from '../src/nano-interfaces';
 import { IStatusReturn } from '../src/status-return-interfaces';
 
 const bananode = new NanoNode('http://145.239.223.42:7072', fetch);
@@ -13,9 +13,9 @@ describe('NanoAccountBackwardCrawler using Banano Honey API', function() {
   this.timeout(200000);
 
   it('has a valid chain using for await iterator on NanoAccountBackwardCrawler', async () => {
-    const banCrawler = new NanoAccountBackwardCrawler(bananode, account, head);
+    const banCrawler = new NanoAccountBackwardCrawler(bananode, account, head, undefined, undefined);
     await banCrawler.initialize().catch((error) => { throw(error); });
-
+    let endBlock: (INanoBlock|undefined) = undefined;
     let expectedHash: TBlockHash = head;
     try {
       for await (const blockStatusReturn of banCrawler) {
@@ -28,7 +28,9 @@ describe('NanoAccountBackwardCrawler using Banano Honey API', function() {
         }
         expect(block.hash).to.equal(expectedHash);
         expectedHash = block.previous;
+        endBlock = block;
       }
+      expect(endBlock?.height).to.equal('1');
     } catch(error) {
       throw(error);
     }

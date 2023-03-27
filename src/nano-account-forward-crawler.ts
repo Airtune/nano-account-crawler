@@ -152,12 +152,23 @@ export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
             // TODO: Edge case optimization that reduce count on each rpc iteration so last iteration doesn't include bloat blocks for large requests.
             let _accountHistory;
             try {
-              _accountHistory = await this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._maxBlocksPerRequest);
+              const _accountHistoryStatusReturn = await this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._maxBlocksPerRequest);
+              if (_accountHistoryStatusReturn.status === "error") {
+                return {
+                  value: {
+                    status: "error",
+                    error_type: "UnexpectedError",
+                    message: `Unexpected error during getBackwardHistory: ${_accountHistoryStatusReturn.error_type}: ${_accountHistoryStatusReturn.message}`,
+                  },
+                  done: true,
+                };
+              }
+              _accountHistory = _accountHistoryStatusReturn.value;
             } catch(error) {
               return {
                 value: {
                   status: "error",
-                  error_type: "RpcError",
+                  error_type: "UnexpectedError",
                   message: error.message,
                 },
                 done: true,

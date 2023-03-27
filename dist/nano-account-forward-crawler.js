@@ -129,7 +129,7 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
         var startBlockHeight = history[historyIndex] && BigInt(history[historyIndex].height);
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
-                var block, blockHeight, _accountHistory, error_2;
+                var block, blockHeight, _accountHistory, _accountHistoryStatusReturn, error_2;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -179,14 +179,25 @@ var NanoAccountForwardCrawler = /** @class */ (function () {
                             _a.trys.push([1, 3, , 4]);
                             return [4 /*yield*/, this._nanoNode.getForwardHistory(this._account, block.hash, "1", this._accountFilter, this._maxBlocksPerRequest)];
                         case 2:
-                            _accountHistory = _a.sent();
+                            _accountHistoryStatusReturn = _a.sent();
+                            if (_accountHistoryStatusReturn.status === "error") {
+                                return [2 /*return*/, {
+                                        value: {
+                                            status: "error",
+                                            error_type: "UnexpectedError",
+                                            message: "Unexpected error during getBackwardHistory: ".concat(_accountHistoryStatusReturn.error_type, ": ").concat(_accountHistoryStatusReturn.message),
+                                        },
+                                        done: true,
+                                    }];
+                            }
+                            _accountHistory = _accountHistoryStatusReturn.value;
                             return [3 /*break*/, 4];
                         case 3:
                             error_2 = _a.sent();
                             return [2 /*return*/, {
                                     value: {
                                         status: "error",
-                                        error_type: "RpcError",
+                                        error_type: "UnexpectedError",
                                         message: error_2.message,
                                     },
                                     done: true,

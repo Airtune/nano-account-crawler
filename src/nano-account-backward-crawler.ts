@@ -100,7 +100,6 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
       };
     }
 
-    const maxRpcIterations = 1000;
     let rpcIterations = 0;
 
     let history: INanoBlock[] = this.accountHistory.history;
@@ -124,7 +123,7 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
 
     return {
       next: async (): Promise<IteratorResult<IStatusReturn<INanoBlock>>> => {
-        if (endReached || history == undefined || historyIndex === undefined || history.length === 0 || historyIndex >= history.length) {
+        if (endReached || history === undefined || historyIndex === undefined || history.length === 0 || historyIndex >= history.length) {
           return { value: { status: "ok", value: undefined }, done: true };
         }
     
@@ -154,12 +153,12 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
           } else {
             // Guard against infinite loops and making too many RPC calls.
             rpcIterations += 1;
-            if (rpcIterations > maxRpcIterations) {
+            if (rpcIterations > this.maxRpcIterations) {
               return {
                 value: {
                   status: "error",
                   error_type: "TooManyRpcIterations",
-                  message: `Expected to fetch full history from nano node within ${maxRpcIterations} requests.`,
+                  message: `Expected to fetch full history from nano node within ${this.maxRpcIterations} requests.`,
                 },
                 done: true,
               };
@@ -168,12 +167,23 @@ export class NanoAccountBackwardCrawler implements INanoAccountBackwardIterable 
             // TODO: Edge case optimization that reduce count on each rpc iteration so last iteration doesn't include bloat blocks for large requests.
             let _accountHistory;
             try {
-              _accountHistory = await this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this._maxBlocksPerRequest);
+              const _accountHistoryStatusReturn = await this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this._maxBlocksPerRequest);
+              if (_accountHistoryStatusReturn.status === "error") {
+                return {
+                  value: {
+                    status: "error",
+                    error_type: "UnexpectedError",
+                    message: `Unexpected error during getBackwardHistory: ${_accountHistoryStatusReturn.error_type}: ${_accountHistoryStatusReturn.message}`,
+                  },
+                  done: true,
+                };
+              }
+              _accountHistory = _accountHistoryStatusReturn.value;
             } catch (error) {
               return {
                 value: {
                   status: "error",
-                  error_type: "NanoNodeError",
+                  error_type: "UnexpectedError",
                   message: error.message,
                 },
                 done: true,

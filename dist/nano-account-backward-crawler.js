@@ -128,7 +128,6 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                 },
             };
         }
-        var maxRpcIterations = 1000;
         var rpcIterations = 0;
         var history = this.accountHistory.history;
         var historyIndex = undefined;
@@ -147,11 +146,11 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
         var endReached = false;
         return {
             next: function () { return __awaiter(_this, void 0, void 0, function () {
-                var block, blockHeight, _accountHistory, error_2;
+                var block, blockHeight, _accountHistory, _accountHistoryStatusReturn, error_2;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            if (endReached || history == undefined || historyIndex === undefined || history.length === 0 || historyIndex >= history.length) {
+                            if (endReached || history === undefined || historyIndex === undefined || history.length === 0 || historyIndex >= history.length) {
                                 return [2 /*return*/, { value: { status: "ok", value: undefined }, done: true }];
                             }
                             block = history[historyIndex];
@@ -177,12 +176,12 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                         case 1:
                             // Guard against infinite loops and making too many RPC calls.
                             rpcIterations += 1;
-                            if (rpcIterations > maxRpcIterations) {
+                            if (rpcIterations > this.maxRpcIterations) {
                                 return [2 /*return*/, {
                                         value: {
                                             status: "error",
                                             error_type: "TooManyRpcIterations",
-                                            message: "Expected to fetch full history from nano node within ".concat(maxRpcIterations, " requests."),
+                                            message: "Expected to fetch full history from nano node within ".concat(this.maxRpcIterations, " requests."),
                                         },
                                         done: true,
                                     }];
@@ -193,14 +192,25 @@ var NanoAccountBackwardCrawler = /** @class */ (function () {
                             _a.trys.push([2, 4, , 5]);
                             return [4 /*yield*/, this.nanoNode.getBackwardHistory(this.account, block.previous, "0", this.accountFilter, this._maxBlocksPerRequest)];
                         case 3:
-                            _accountHistory = _a.sent();
+                            _accountHistoryStatusReturn = _a.sent();
+                            if (_accountHistoryStatusReturn.status === "error") {
+                                return [2 /*return*/, {
+                                        value: {
+                                            status: "error",
+                                            error_type: "UnexpectedError",
+                                            message: "Unexpected error during getBackwardHistory: ".concat(_accountHistoryStatusReturn.error_type, ": ").concat(_accountHistoryStatusReturn.message),
+                                        },
+                                        done: true,
+                                    }];
+                            }
+                            _accountHistory = _accountHistoryStatusReturn.value;
                             return [3 /*break*/, 5];
                         case 4:
                             error_2 = _a.sent();
                             return [2 /*return*/, {
                                     value: {
                                         status: "error",
-                                        error_type: "NanoNodeError",
+                                        error_type: "UnexpectedError",
                                         message: error_2.message,
                                     },
                                     done: true,
